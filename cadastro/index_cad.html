@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Pocoto Games</title>
+    <link rel="stylesheet" href="../style_home.css">
+    <link rel="stylesheet" href="../login/style_login.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <img src="../imagens/watermarked_img_5334739338940190992.webp" alt="Pocoto Games" class="auth-logo">
+            <h2>Criar Conta na Arena</h2>
+            
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <label for="cad-nome">Nome de Jogador:</label>
+                    <input type="text" id="cad-nome" required placeholder="Ex: CavaloGamer">
+                </div>
+                <div class="form-group">
+                    <label for="cad-email">E-mail:</label>
+                    <input type="email" id="cad-email" required placeholder="seuemail@exemplo.com">
+                </div>
+                <div class="form-group">
+                    <label for="cad-senha">Senha:</label>
+                    <input type="password" id="cad-senha" required placeholder="Digite uma senha forte">
+                </div>
+                <div class="form-group">
+                    <label for="cad-confirma">Confirmar Senha:</label>
+                    <input type="password" id="cad-confirma" required placeholder="Repita sua senha">
+                </div>
+                <button type="submit" class="btn-primary btn-block">Concluir Cadastro</button>
+            </form>
+            
+            <p class="auth-footer">
+                Já possui uma conta? <a href="../login/index_login.html">Faça login</a><br>
+                <a href="../home.html">← Voltar para o início</a>
+            </p>
+        </div>
+    </div>
+    <script src="cad.js"></script>
+</body>
+</html>

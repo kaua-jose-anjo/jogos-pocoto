@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pocoto Games - Arena Gamer do Poccotó</title>
+    <link rel="stylesheet" href="home.css">
+</head>
+<body>
+    <!-- CABEÇALHO SUPERIOR -->
+    <header class="main-header">
+        <div class="header-branding">
+            <img src="imagens/watermarked_img_5334739338940190992.webp" alt="Logo Pocoto Games" class="logo-img">
+            <div>
+                <h1>Pocoto Games</h1>
+                <p>Jogos Bançudos do Cavalo</p>
+            </div>
+        </div>
+
+        <ul class="user-actions">
+            <li><a href="login/index_login.html" class="btn-link">Já tem uma conta? Faça login</a></li>
+            <li><a href="cadastro/index_cad.html" class="btn-primary">Cadastre-se</a></li>
+        </ul>
+    </header>
+
+    <!-- BARRA DE NAVEGAÇÃO -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#section1">Sobre a Arena</a></li>
+            <li><a href="#section2">Sinuca 8-Ball</a></li>
+            <li><a href="#section3">Acerte o Poccotó</a></li>
+            <li><a href="#section4">Dúvidas & Agendamentos</a></li>
+        </ul>
+    </nav>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+
+<!-- SEÇÃO 1: SOBRE A ARENA -->
+<section id="section1" class="content-section">
+    <h2>Bem-vindo à Arena Gamer do Poccotó</h2>
+    <p>
+        Esta plataforma foi desenvolvida com o propósito de promover a integração e o entretenimento social do nosso grupo, trazendo uma experiência interativa e divertida estrelada pelo nosso icônico mascote: o <b>Cavalo Bançudo</b>.
+    </p>
+    
+    <div class="image-wrapper">
+        <img src="imagens/watermarked_img_5334739338940190992.webp" alt="Arena Gamer do Poccotó">
+    </div>
+</section>
+        <!-- SEÇÃO 2: JOGO DE BILHAR 8-BALL -->
+        <section id="section2" class="content-section">
+            <h2>Sinuca 8-Ball Poccotó</h2>
+            <p>Mostre toda a sua habilidade na mesa de bilhar com o Cavalo Bançudo!</p>
+            <div class="image-wrapper">
+                <img src="imagens/fc8af01b-68f0-4de5-a37d-a91e8eed5f08.webp" alt="Jogo 8-Ball Poccotó">
+            </div>
+            <div class="game-action">
+                <a href="8-ball/8ball.html" class="btn-primary btn-game">🎱 Jogar Sinuca 8-Ball</a>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 3: JOGO ACERTE O POCCOTÓ -->
+        <section id="section3" class="content-section">
+            <h2>Acerte o Poccotó!</h2>
+            <p>Teste seus reflexos acertando o Cavalo Bançudo quando ele sair do buraco!</p>
+            <div class="image-wrapper">
+                <img src="imagens/watermarked_img_709182551186086536.webp" alt="Jogo Acerte o Poccotó">
+            </div>
+            <div class="game-action">
+                <a href="acerte-pocoto/index.html" class="btn-primary btn-game">🔨 Jogar Acerte o Poccotó</a>
+            </div>
+        </section>
+
+        <!-- SEÇÃO 4: AGENDAMENTO E DÚVIDAS -->
+        <section id="section4" class="content-section">
+            <h2>Agendamento de Torneios & Dúvidas</h2>
+            <p>Reserve um horário para os campeonatos ou tire suas dúvidas sobre a plataforma.</p>
+            
+            <div class="calendar-dropdown">
+                <button class="btn-primary btn-calendar">📅 Selecionar Data do Torneio</button>
+                
+                <div class="calendar-popover">
+                    <h3>Escolha a Data</h3>
+                    <form class="appointment-form">
+                        <div class="form-group">
+                            <label for="data-agendamento">Data:</label>
+                            <input type="date" id="data-agendamento"

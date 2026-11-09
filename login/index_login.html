@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Pocoto Games</title>
+    <link rel="stylesheet" href="../style_home.css">
+    <link rel="stylesheet" href="style_login.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <img src="../imagens/watermarked_img_5334739338940190992.webp" alt="Pocoto Games" class="auth-logo">
+            <h2>Entrar na Arena</h2>
+            
+            <form id="form-login">
+                <div class="form-group">
+                    <label for="login-email">E-mail ou Usuário:</label>
+                    <input type="text" id="login-email" required placeholder="Digite seu e-mail">
+                </div>
+                <div class="form-group">
+                    <label for="login-senha">Senha:</label>
+                    <input type="password" id="login-senha" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn-primary btn-block">Acessar Conta</button>
+            </form>
+            
+            <p class="auth-footer">
+                Ainda não tem conta? <a href="../cadastro/index_cad.html">Cadastre-se aqui</a><br>
+                <a href="../home.html">← Voltar para o início</a>
+            </p>
+        </div>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>

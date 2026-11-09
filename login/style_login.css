@@ -1,0 +1,165 @@
+/* =========================================================
+   POCOTO GAMES - ESTILOS DE AUTENTICAÇÃO (login/style_login.css)
+   Cores Temáticas Aprimoradas:
+   - Primária: Marrom Claro (#8B5A2B / #A06C3F)
+   - Secundária: Verde Escuro (#1E4620 / #2E6F32)
+   ========================================================= */
+
+:root {
+    --primary-brown: #8B5A2B;
+    --primary-brown-hover: #6E441F;
+    --primary-brown-light: #F9F5F0;
+    
+    --secondary-green: #1E4620;
+    --secondary-green-accent: #2E6F32;
+    --secondary-green-hover: #143216;
+    
+    --bg-gradient: linear-gradient(135deg, #EFE6DC 0%, #D8C8B8 50%, #C4B2A0 100%);
+    --card-bg: #FFFFFF;
+    --text-color: #2D251E;
+    --text-muted: #665A4F;
+    --border-color: #E2D7CB;
+    
+    --shadow-card: 0 15px 35px rgba(45, 37, 30, 0.18);
+    --shadow-input-focus: 0 0 0 4px rgba(46, 111, 50, 0.2);
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: var(--bg-gradient);
+    padding: 1.5rem;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+}
+
+.auth-card {
+    background-color: var(--card-bg);
+    border-radius: 20px;
+    padding: 2.8rem 2.2rem;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-color);
+    /* Borda superior dupla temática */
+    border-top: 6px solid var(--secondary-green-accent);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Detalhe decorativo no topo do card */
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-brown), var(--secondary-green-accent));
+}
+
+.auth-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-brown);
+    margin-bottom: 1.2rem;
+    box-shadow: 0 6px 15px rgba(139, 90, 43, 0.25);
+    transition: transform 0.3s ease;
+}
+
+.auth-logo:hover {
+    transform: scale(1.05) rotate(3deg);
+}
+
+.auth-card h2 {
+    color: var(--primary-brown);
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-bottom: 1.6rem;
+    letter-spacing: -0.5px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    margin-bottom: 1.3rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.4rem;
+    font-size: 0.92rem;
+}
+
+.form-group input {
+    padding: 0.85rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--primary-brown-light);
+    transition: all 0.25s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    background-color: #FFFFFF;
+    border-color: var(--secondary-green-accent);
+    box-shadow: var(--shadow-input-focus);
+}
+
+.btn-primary.btn-block {
+    width: 100%;
+    padding: 0.95rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-top: 0.8rem;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--secondary-green-accent) 0%, var(--secondary-green) 100%);
+    color: #FFFFFF;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(30, 70, 32, 0.35);
+    transition: all 0.25s ease;
+}
+
+.btn-primary.btn-block:hover {
+    background: linear-gradient(135deg, var(--secondary-green) 0%, var(--secondary-green-hover) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(30, 70, 32, 0.45);
+}
+
+.btn-primary.btn-block:active {
+    transform: translateY(0);
+}
+
+.auth-footer {
+    margin-top: 1.8rem;
+    padding-top: 1.2rem;
+    border-top: 1px dashed var(--border-color);
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+.auth-footer a {
+    color: var(--primary-brown);
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.auth-footer a:hover {
+    color: var(--secondary-green-accent);
+    text-decoration: underline;
+}
