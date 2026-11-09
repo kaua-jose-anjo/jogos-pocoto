@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - LÓGICA DO JOGO 8-BALL (2 JOGADORES - REPETE VEZ)
+   POCOTO GAMES - LÓGICA DO JOGO 8-BALL (REGRAS COMPLETAS + BOLA NA MÃO)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ballsLeftEl = document.getElementById('balls-left');
     const scoreEl = document.getElementById('score');
 
-    // Configurações do jogo
+    // Configurações físicas e visuais
     const BALL_RADIUS = 10;
     const FRICTION = 0.985;
     
@@ -24,12 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let mousePos = { x: 0, y: 0 };
     
     // Controle de Turnos e Regras
-    let currentPlayer = 1; // 1 = Jogador 1, 2 = Jogador 2
+    let currentPlayer = 1; // 1 = Jogador 1 (Vermelho), 2 = Jogador 2 (Azul)
     let scoreP1 = 0;
     let scoreP2 = 0;
     
     let isShotInProgress = false;
-    let playerScoredCurrentTurn = false; // Controla se o jogador pontuou na jogada atual
+    let playerScoredCurrentTurn = false; 
+    let ballInHand = false; // Modo "Bola na mão" ativado
+    let firstBallHit = null; // Registra a primeira bola atingida pela branca
+    let whiteBallPocketed = false; // Registra se a branca caiu na caçapa
+    let opponentBallPocketed = false; // Registra se derrubou bola do oponente
 
     // Caçapas
     const pockets = [
@@ -45,6 +49,10 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreP2 = 0;
         isShotInProgress = false;
         playerScoredCurrentTurn = false;
+        ballInHand = false;
+        firstBallHit = null;
+        whiteBallPocketed = false;
+        opponentBallPocketed = false;
         balls = [];
 
         // Bola Branca
@@ -62,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             [targetColors[i], targetColors[j]] = [targetColors[j], targetColors[i]];
         }
 
-        // Montagem do triângulo de 16 bolas (Linhas: 1, 2, 3, 4, 6)
+        // Montagem do triângulo de 16 bolas
         let startX = 530;
         let startY = 200;
         let index = 0;
@@ -91,25 +99,47 @@ document.addEventListener('DOMContentLoaded', () => {
         const redBallsLeft = balls.filter(b => b.color === COLOR_P1).length;
         const blueBallsLeft = balls.filter(b => b.color === COLOR_P2).length;
 
-        const nomeJogadorAtual = currentPlayer === 1 
+        let statusText = currentPlayer === 1 
             ? `<span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>` 
             : `<span style="color:${COLOR_P2}">Jogador 2 (Azul)</span>`;
 
-        playerNameEl.innerHTML = nomeJogadorAtual;
+        if (ballInHand) {
+            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique na mesa para posicionar)</strong>`;
+        }
+
+        playerNameEl.innerHTML = statusText;
         ballsLeftEl.textContent = `🔴 ${redBallsLeft} | 🔵 ${blueBallsLeft}`;
         scoreEl.textContent = `P1: ${scoreP1} pts | P2: ${scoreP2} pts`;
     }
 
-    // Controlo de força e pontaria
+    // Controle do Mouse (Posicionamento da Bola Branca / Mira)
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mousePos.x = e.clientX - rect.left;
         mousePos.y = e.clientY - rect.top;
+
+        // Se estiver no modo "Bola na Mão", move a bola branca junto com o cursor
+        if (ballInHand) {
+            const whiteBall = balls[0];
+            if (whiteBall) {
+                // Restringe a bola branca para ficar dentro da mesa
+                whiteBall.x = Math.max(BALL_RADIUS, Math.min(canvas.width - BALL_RADIUS, mousePos.x));
+                whiteBall.y = Math.max(BALL_RADIUS, Math.min(canvas.height - BALL_RADIUS, mousePos.y));
+            }
+        }
     });
 
     canvas.addEventListener('mousedown', () => { 
         const whiteBall = balls[0];
-        // Só permite mirar se nenhuma bola estiver em movimento
+
+        // Se estiver no modo Bola na Mão, um clique fixa a bola na posição
+        if (ballInHand) {
+            ballInHand = false;
+            updateHUD();
+            return;
+        }
+
+        // Só permite mirar se a jogada anterior já tiver terminado
         if (!isShotInProgress && whiteBall && Math.abs(whiteBall.vx) < 0.05 && Math.abs(whiteBall.vy) < 0.05) {
             isAiming = true; 
             power = 0; 
@@ -117,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     canvas.addEventListener('mouseup', () => {
-        if (isAiming) {
+        if (isAiming && !ballInHand) {
             const whiteBall = balls[0];
             const dx = mousePos.x - whiteBall.x;
             const dy = mousePos.y - whiteBall.y;
@@ -130,9 +160,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isAiming = false;
             power = 0;
             
-            // Marca início da tacada e reseta a pontuação da jogada
+            // Reseta contadores da jogada atual
             isShotInProgress = true;
             playerScoredCurrentTurn = false;
+            firstBallHit = null;
+            whiteBallPocketed = false;
+            opponentBallPocketed = false;
         }
     });
 
@@ -150,6 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const distance = Math.hypot(dx, dy);
 
                 if (distance < BALL_RADIUS * 2) {
+                    // Registra o primeiro toque da bola branca em outra bola
+                    if (b1.isWhite && !firstBallHit) {
+                        firstBallHit = b2;
+                    } else if (b2.isWhite && !firstBallHit) {
+                        firstBallHit = b1;
+                    }
+
                     const overlap = (BALL_RADIUS * 2) - distance;
                     const nx = dx / (distance || 1);
                     const ny = dy / (distance || 1);
@@ -216,19 +256,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dist = Math.hypot(ball.x - pocket.x, ball.y - pocket.y);
                 if (dist < 20) {
                     if (ball.isWhite) {
+                        whiteBallPocketed = true;
                         ball.x = 200;
                         ball.y = 200;
                         ball.vx = 0;
                         ball.vy = 0;
                     } else {
-                        if (ball.color === COLOR_P1) {
-                            scoreP1 += 100;
-                            // Jogador 1 ganha o direito de jogar de novo se acertar a sua bola (Vermelha)
-                            if (currentPlayer === 1) playerScoredCurrentTurn = true;
-                        } else if (ball.color === COLOR_P2) {
-                            scoreP2 += 100;
-                            // Jogador 2 ganha o direito de jogar de novo se acertar a sua bola (Azul)
-                            if (currentPlayer === 2) playerScoredCurrentTurn = true;
+                        const targetMyColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
+
+                        if (ball.color === COLOR_P1) scoreP1 += 100;
+                        if (ball.color === COLOR_P2) scoreP2 += 100;
+
+                        if (ball.color === targetMyColor) {
+                            playerScoredCurrentTurn = true;
+                        } else {
+                            // Encaçapou a bola do adversário
+                            opponentBallPocketed = true;
                         }
 
                         balls.splice(i, 1);
@@ -238,14 +281,28 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Quando todas as bolas pararem completamente após uma tacada
+        // FIM DA JOGADA: Executado quando todas as bolas pararam
         if (isShotInProgress && !anyBallMoving) {
             isShotInProgress = false;
 
-            // Se NÃO derrubou nenhuma bola da sua própria cor, passa a vez
-            if (!playerScoredCurrentTurn) {
+            const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
+            
+            // 1. Falta: Não atingiu nenhuma bola ou acertou primeiro a bola do adversário
+            const hitFoul = !firstBallHit || (firstBallHit.color !== myColor);
+            
+            // 2. Falta total se: errou a primeira bola, encaçapou a branca OU encaçapou a bola do oponente
+            const isFoul = hitFoul || whiteBallPocketed || opponentBallPocketed;
+
+            if (isFoul) {
+                // Passa a vez e ativa "Bola na Mão" para o próximo jogador
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                ballInHand = true;
+            } else if (!playerScoredCurrentTurn) {
+                // Se não cometeu falta mas também não encaçapou a sua cor, apenas passa a vez normalmente
                 currentPlayer = currentPlayer === 1 ? 2 : 1;
             }
+            // Se encaçapou a sua cor e não cometeu faltas, o jogador repete a jogada normalmente.
+
             updateHUD();
         }
     }
@@ -263,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Desenhar linha de pontaria com a cor do jogador atual
         const whiteBall = balls[0];
-        if (whiteBall && isAiming && !isShotInProgress) {
+        if (whiteBall && isAiming && !isShotInProgress && !ballInHand) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             
             ctx.strokeStyle = playerColor;
@@ -271,6 +328,16 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.beginPath();
             ctx.moveTo(whiteBall.x, whiteBall.y);
             ctx.lineTo(mousePos.x, mousePos.y);
+            ctx.stroke();
+        }
+
+        // Desenhar indicador visual do modo "Bola na Mão"
+        if (ballInHand && whiteBall) {
+            const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
+            ctx.strokeStyle = playerColor;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(whiteBall.x, whiteBall.y, BALL_RADIUS + 6, 0, Math.PI * 2);
             ctx.stroke();
         }
 
