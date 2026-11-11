@@ -1,0 +1,170 @@
+/* =========================================================
+   POCOTO GAMES - ACERTE O POCOTÓ (acerte-pocoto/style_pocoto.css)
+   ========================================================= */
+
+.game-container {
+    max-width: 760px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.game-card {
+    background-color: #FFFFFF;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 16px 36px rgba(45, 37, 30, 0.18);
+    border: 1px solid #E2D7CB;
+    border-top: 6px solid #2E6F32;
+    text-align: center;
+}
+
+.game-card h2 {
+    color: #2D251E;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.game-description {
+    color: #665A4F;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.game-hud {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background: linear-gradient(135deg, #F9F5F0 0%, #EFE8DE 100%);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    border: 2px solid #D2C4B4;
+}
+
+.hud-item {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #6E441F;
+}
+
+.hud-item span {
+    color: #2E6F32;
+    font-size: 1.25rem;
+}
+
+.hole-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 540px;
+    margin: 0 auto 2rem auto;
+    background-color: #2E6F32;
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.25);
+    border: 4px solid #1E4620;
+}
+
+.hole {
+    width: 100%;
+    height: 125px;
+    background: radial-gradient(circle, #3D2B1F 20%, #1A120B 100%);
+    border: 6px solid #8B5A2B;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 10px 18px rgba(0, 0, 0, 0.8), 0 6px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.hole::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 110%;
+    height: 35px;
+    background: #6E441F;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.pocoto {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    transition: top 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.25);
+    user-select: none;
+}
+
+.hole.up .pocoto {
+    top: 5px;
+}
+
+.horse-icon {
+    width: 62px;
+    height: 62px;
+    fill: #8B5A2B;
+    filter: drop-shadow(0px 6px 4px rgba(0,0,0,0.4));
+    transition: transform 0.1s ease;
+}
+
+.hole.hit .pocoto .horse-icon {
+    transform: scale(0.75) rotate(-20deg);
+    fill: #D32F2F;
+}
+
+#btn-start {
+    padding: 0.95rem 2.8rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8B5A2B 0%, #6E441F 100%);
+    color: #FFFFFF;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(139, 90, 43, 0.35);
+    transition: all 0.25s ease;
+}
+
+#btn-start:hover {
+    background: linear-gradient(135deg, #6E441F 0%, #523115 100%);
+    transform: translateY(-2px);
+}
+
+#btn-start:disabled {
+    background: #B0A090;
+    cursor: not-allowed;
+    transform: none;
+}
+/* Limpeza de Estilos de Links do Cabeçalho */
+.main-header a, 
+.main-header a:visited, 
+.main-header a:hover, 
+.main-header a:active {
+    text-decoration: none !important;
+}
+
+.logo {
+    color: #FFFFFF !important;
+}
+
+.main-nav a {
+    color: #F9F5F0 !important;
+}
+
+.main-nav a.active {
+    color: #FFD700 !important;
+}

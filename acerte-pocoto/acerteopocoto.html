@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerte o Pocotó - Pocotó Games</title>
+    <link rel="stylesheet" href="../home.css">
+    <link rel="stylesheet" href="indexpocoto.css">
+</head>
+<body>
+    <header class="main-header" style="background-color: #1E4620; padding: 1rem 0; border-bottom: 4px solid #8B5A2B;">
+        <div class="header-container" style="max-width: 980px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1rem;">
+            <a href="../home.html" class="logo" style="color: #FFFFFF !important; font-size: 1.5rem; font-weight: 700; text-decoration: none !important; display: flex; align-items: center; gap: 8px;">
+                <span class="logo-icon">🐴</span> Pocotó Games
+            </a>
+            <nav class="main-nav" style="display: flex; gap: 1.5rem;">
+                <a href="../home.html" style="color: #F9F5F0 !important; text-decoration: none !important; font-weight: 600; font-size: 1rem;">Início</a>
+                <a href="../8-ball/index.html" style="color: #F9F5F0 !important; text-decoration: none !important; font-weight: 600; font-size: 1rem;">8-Ball</a>
+                <a href="index.html" class="active" style="color: #FFD700 !important; text-decoration: none !important; font-weight: 700; font-size: 1rem;">Acerte o Pocotó</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="game-container">
+        <div class="game-card">
+            <h2>🐴 Acerte o Pocotó Bançudo!</h2>
+            <p class="game-description">Clique no Cavalo Bançudo assim que ele sair da toca. Cuidado para não deixá-lo escapar!</p>
+
+            <div class="game-hud">
+                <div class="hud-item">Pontuação: <span id="score">0</span></div>
+                <div class="hud-item">Tempo: <span id="timer">30</span>s</div>
+                <div class="hud-item">Recorde: <span id="high-score">0</span></div>
+            </div>
+
+            <div class="hole-grid">
+                <div class="hole" data-index="0"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="1"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="2"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="3"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="4"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="5"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="6"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="7"><div class="pocoto">🐴</div></div>
+                <div class="hole" data-index="8"><div class="pocoto">🐴</div></div>
+            </div>
+
+            <div class="controls-panel">
+                <button id="btn-start">Iniciar Jogo</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="pocoto.js"></script>
+</body>
+</html>
