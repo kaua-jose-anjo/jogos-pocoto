@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (ESTILO 8 BALL POOL MINICLIP)
+   POCOTO GAMES - 8-BALL (ESTILO 8 BALL POOL + BOLA NA MÃO SEM COLISÃO)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePowerBarUI();
         ballBodies = [];
 
-        // Paredes Limítrofes (Tabelas com alto quique elástico igual ao 8 Ball Pool)
+        // Paredes Limítrofes (Tabelas)
         const wallPhysicsOptions = { 
             isStatic: true, 
             restitution: 0.98, 
@@ -78,14 +78,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         World.add(engine.world, walls);
 
-        /* =========================================================
-           CALIBRAÇÃO DE FÍSICA ESTILO 8 BALL POOL
-           ========================================================= */
+        // Física Estilo 8 Ball Pool
         const poolBallPhysics = {
             restitution: 0.99,   // Transferência de momento quase perfeita
             friction: 0.0,       // Sem resistência ao tangenciar outras bolas
-            frictionAir: 0.0035, // Desaceleração suave do pano de bilhar
-            density: 0.04        // Densidade padrão unificada
+            frictionAir: 0.0035, // Desaceleração suave do pano
+            density: 0.04
         };
 
         // Bola Branca
@@ -133,6 +131,15 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHUD();
     }
 
+    function setBallInHand(active) {
+        ballInHand = active;
+        if (whiteBallBody) {
+            // Desativa as colisões físicas enquanto a bola estiver na mão
+            whiteBallBody.isSensor = active;
+        }
+        updateHUD();
+    }
+
     function updateHUD() {
         const redBalls = ballBodies.filter(b => b.color === COLOR_P1).length;
         const blueBalls = ballBodies.filter(b => b.color === COLOR_P2).length;
@@ -142,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : `<span style="color:${COLOR_P2}">Jogador 2 (Azul)</span>`;
 
         if (ballInHand) {
-            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique para posicionar)</strong>`;
+            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique na mesa para posicionar)</strong>`;
         }
 
         playerNameEl.innerHTML = statusText;
@@ -163,9 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
         mousePos.y = e.clientY - rect.top;
 
         if (ballInHand && whiteBallBody) {
+            // Reposiciona a branca sem colidir com as outras bolas
             Body.setPosition(whiteBallBody, {
-                x: Math.max(BALL_RADIUS, Math.min(canvas.width - BALL_RADIUS, mousePos.x)),
-                y: Math.max(BALL_RADIUS, Math.min(canvas.height - BALL_RADIUS, mousePos.y))
+                x: Math.max(BALL_RADIUS + 5, Math.min(canvas.width - BALL_RADIUS - 5, mousePos.x)),
+                y: Math.max(BALL_RADIUS + 5, Math.min(canvas.height - BALL_RADIUS - 5, mousePos.y))
             });
             Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
         }
@@ -173,8 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('mousedown', () => {
         if (ballInHand) {
-            ballInHand = false;
-            updateHUD();
+            // Confirma a posição e reativa as colisões normais da bola branca
+            setBallInHand(false);
         }
     });
 
@@ -197,7 +205,6 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const angle = Math.atan2(mousePos.y - whiteBallBody.position.y, mousePos.x - whiteBallBody.position.x);
-            // Impulso ajustado para permitir desde tacadas suaves até estouradas de mesa
             const forceMagnitude = (power / 100) * 0.28; 
 
             Body.applyForce(whiteBallBody, whiteBallBody.position, {
@@ -246,10 +253,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (dist < 18) {
                     if (b.isWhite) {
+                        // Reseta a branca e ativa bola na mão (desativando colisões)
                         Body.setPosition(whiteBallBody, { x: 200, y: 200 });
                         Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
-                        ballInHand = true;
                         currentPlayer = currentPlayer === 1 ? 2 : 1;
+                        setBallInHand(true);
                     } else {
                         if (b.color === COLOR_P1) scoreP1 += 100;
                         if (b.color === COLOR_P2) scoreP2 += 100;
@@ -262,7 +270,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Guia de Mira Estilo 8 Ball Pool
+        // Desenhar indicador visual de Bola na Mão (Aura amarela ao redor da branca)
+        if (ballInHand && whiteBallBody) {
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.arc(whiteBallBody.position.x, whiteBallBody.position.y, BALL_RADIUS + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Guia de Mira
         if (!isShotInProgress && !ballInHand) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             ctx.strokeStyle = playerColor;
