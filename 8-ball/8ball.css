@@ -3,62 +3,171 @@
    ========================================================= */
 
 .game-container {
-    max-width: 900px;
+    max-width: 960px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
 
 .game-card {
-    background-color: var(--card-bg);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: var(--shadow);
-    border: 2px solid var(--border-color);
-    border-top: 6px solid var(--secondary-green);
+    background-color: var(--card-bg, #FFFFFF);
+    border-radius: 20px;
+    padding: 1.8rem;
+    box-shadow: 0 12px 30px rgba(45, 37, 30, 0.15);
+    border: 1px solid var(--border-color, #E2D7CB);
+    border-top: 6px solid var(--secondary-green-accent, #2E6F32);
     text-align: center;
 }
 
 .game-hud {
     display: flex;
     justify-content: space-around;
-    background-color: var(--primary-brown-light);
-    padding: 0.8rem;
-    border-radius: 10px;
-    margin-bottom: 1.2rem;
-    border: 1px solid var(--border-color);
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    background-color: var(--primary-brown-light, #F9F5F0);
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 2px solid var(--border-color, #E2D7CB);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.03);
 }
 
 .hud-item {
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--primary-brown);
+    color: var(--primary-brown, #8B5A2B);
 }
 
 .hud-item strong {
-    color: var(--secondary-green);
+    color: var(--secondary-green, #1E4620);
+    font-weight: 700;
 }
 
+/* Wrapper do Canvas com alinhamento flexível para a barra de força */
 .canvas-wrapper {
     display: flex;
     justify-content: center;
-    margin-bottom: 1.2rem;
+    align-items: center;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
 }
 
-canvas {
+#poolTable {
     background-color: #1a5e20;
-    border: 14px solid #5d4037;
-    border-radius: 12px;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5), 0 8px 20px rgba(0, 0, 0, 0.2);
+    border: 16px solid #5d4037;
+    border-radius: 18px;
+    box-shadow: 
+        inset 0 0 20px rgba(0, 0, 0, 0.6), 
+        0 10px 25px rgba(0, 0, 0, 0.3);
     cursor: crosshair;
+    display: block;
+}
+
+/* Barra de Força Vertical Lateral */
+.power-bar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 400px; /* Mesma altura do canvas */
+    background-color: #2D251E;
+    padding: 0.8rem 0.5rem;
+    border-radius: 12px;
+    border: 3px solid #5d4037;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.power-bar-label {
+    color: #F9F5F0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.power-bar-track {
+    width: 22px;
+    height: 310px;
+    background-color: #1A1410;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column-reverse;
+    border: 2px solid #6E441F;
+}
+
+.power-bar-fill {
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(0deg, #43a047 0%, #fdd835 60%, #e53935 100%);
+    border-radius: 8px;
+    transition: height 0.05s linear;
+}
+
+.power-percentage {
+    color: #FFD700;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .controls-panel {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
+    padding-top: 0.5rem;
 }
 
 .controls-panel p {
-    color: var(--text-muted);
+    color: var(--text-muted, #665A4F);
     font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 680px;
+    margin: 0;
+    background-color: #F8F9FA;
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--secondary-green-accent, #2E6F32);
+}
+
+#btn-restart {
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #8B5A2B 0%, #6E441F 100%);
+    color: #FFFFFF;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
+    transition: all 0.25s ease;
+}
+
+#btn-restart:hover {
+    background: linear-gradient(135deg, #6E441F 0%, #523115 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 90, 43, 0.4);
+}
+
+@media (max-width: 700px) {
+    .canvas-wrapper {
+        flex-direction: column;
+    }
+    .power-bar-container {
+        height: auto;
+        width: 100%;
+        max-width: 300px;
+    }
+    .power-bar-track {
+        width: 100%;
+        height: 20px;
+        flex-direction: row;
+    }
+    .power-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #43a047 0%, #fdd835 60%, #e53935 100%);
+    }
 }

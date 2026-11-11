@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - LÓGICA DO JOGO 8-BALL (REGRAS COMPLETAS + BOLA NA MÃO)
+   POCOTO GAMES - 8-BALL (ESTILO 8 BALL POOL MINICLIP)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -11,29 +11,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const ballsLeftEl = document.getElementById('balls-left');
     const scoreEl = document.getElementById('score');
 
-    // Configurações físicas e visuais
+    // Elementos da Barra de Força
+    const powerBarFill = document.getElementById('power-bar-fill');
+    const powerPercentage = document.getElementById('power-percentage');
+
+    // Módulos do Matter.js
+    const { Engine, World, Bodies, Body, Vector } = Matter;
+
+    const engine = Engine.create();
+    engine.gravity.y = 0;
+    engine.gravity.x = 0;
+
+    // Configurações Globais
     const BALL_RADIUS = 10;
-    const FRICTION = 0.985;
-    
-    // Cores dos Jogadores
     const COLOR_P1 = '#e53935'; // Vermelho (Jogador 1)
     const COLOR_P2 = '#1e88e5'; // Azul (Jogador 2)
 
-    let isAiming = false;
-    let power = 0;
-    let mousePos = { x: 0, y: 0 };
-    
-    // Controle de Turnos e Regras
-    let currentPlayer = 1; // 1 = Jogador 1 (Vermelho), 2 = Jogador 2 (Azul)
+    let currentPlayer = 1;
     let scoreP1 = 0;
     let scoreP2 = 0;
     
+    // Controle de Carregamento de Força
+    let isChargingPower = false;
+    let power = 0; 
+    let powerDirection = 1;
+    const MAX_POWER = 100;
+    
+    let mousePos = { x: 0, y: 0 };
+    let ballInHand = false;
     let isShotInProgress = false;
-    let playerScoredCurrentTurn = false; 
-    let ballInHand = false; // Modo "Bola na mão" ativado
-    let firstBallHit = null; // Registra a primeira bola atingida pela branca
-    let whiteBallPocketed = false; // Registra se a branca caiu na caçapa
-    let opponentBallPocketed = false; // Registra se derrubou bola do oponente
+
+    let whiteBallBody = null;
+    let ballBodies = [];
 
     // Caçapas
     const pockets = [
@@ -41,36 +50,64 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 15, y: 385 }, { x: 400, y: 390 }, { x: 785, y: 385 }
     ];
 
-    let balls = [];
-
     function initGame() {
+        World.clear(engine.world);
+
         currentPlayer = 1;
         scoreP1 = 0;
         scoreP2 = 0;
-        isShotInProgress = false;
-        playerScoredCurrentTurn = false;
         ballInHand = false;
-        firstBallHit = null;
-        whiteBallPocketed = false;
-        opponentBallPocketed = false;
-        balls = [];
+        isShotInProgress = false;
+        isChargingPower = false;
+        power = 0;
+        updatePowerBarUI();
+        ballBodies = [];
+
+        // Paredes Limítrofes (Tabelas com alto quique elástico igual ao 8 Ball Pool)
+        const wallPhysicsOptions = { 
+            isStatic: true, 
+            restitution: 0.98, 
+            friction: 0.0 
+        };
+
+        const walls = [
+            Bodies.rectangle(400, -10, 800, 20, wallPhysicsOptions),
+            Bodies.rectangle(400, 410, 800, 20, wallPhysicsOptions),
+            Bodies.rectangle(-10, 200, 20, 400, wallPhysicsOptions),
+            Bodies.rectangle(810, 200, 20, 400, wallPhysicsOptions)
+        ];
+        World.add(engine.world, walls);
+
+        /* =========================================================
+           CALIBRAÇÃO DE FÍSICA ESTILO 8 BALL POOL
+           ========================================================= */
+        const poolBallPhysics = {
+            restitution: 0.99,   // Transferência de momento quase perfeita
+            friction: 0.0,       // Sem resistência ao tangenciar outras bolas
+            frictionAir: 0.0035, // Desaceleração suave do pano de bilhar
+            density: 0.04        // Densidade padrão unificada
+        };
 
         // Bola Branca
-        balls.push({ x: 200, y: 200, vx: 0, vy: 0, color: '#ffffff', isWhite: true });
+        whiteBallBody = Bodies.circle(200, 200, BALL_RADIUS, poolBallPhysics);
+        whiteBallBody.isWhite = true;
+        whiteBallBody.color = '#ffffff';
+        World.add(engine.world, whiteBallBody);
+        ballBodies.push(whiteBallBody);
 
-        // Lista com exatamente 16 bolas (8 Azuis e 8 Vermelhas)
+        // 16 Bolas Alvo (8 Vermelhas e 8 Azuis)
         const targetColors = [
             COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2,
             COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1
         ];
 
-        // Embaralha as cores de forma aleatória (Fisher-Yates)
+        // Embaralhamento Aleatório (Fisher-Yates)
         for (let i = targetColors.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [targetColors[i], targetColors[j]] = [targetColors[j], targetColors[i]];
         }
 
-        // Montagem do triângulo de 16 bolas
+        // Montagem do Triângulo
         let startX = 530;
         let startY = 200;
         let index = 0;
@@ -80,14 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const count = rows[row];
             for (let col = 0; col < count; col++) {
                 if (index < targetColors.length) {
-                    balls.push({
-                        x: startX + row * (BALL_RADIUS * 2 + 2),
-                        y: startY + (col - (count - 1) / 2) * (BALL_RADIUS * 2 + 2),
-                        vx: 0,
-                        vy: 0,
-                        color: targetColors[index],
-                        isWhite: false
-                    });
+                    const bx = startX + row * (BALL_RADIUS * 2 + 2);
+                    const by = startY + (col - (count - 1) / 2) * (BALL_RADIUS * 2 + 2);
+
+                    const ball = Bodies.circle(bx, by, BALL_RADIUS, poolBallPhysics);
+                    ball.isWhite = false;
+                    ball.color = targetColors[index];
+
+                    World.add(engine.world, ball);
+                    ballBodies.push(ball);
                     index++;
                 }
             }
@@ -96,266 +134,169 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateHUD() {
-        const redBallsLeft = balls.filter(b => b.color === COLOR_P1).length;
-        const blueBallsLeft = balls.filter(b => b.color === COLOR_P2).length;
+        const redBalls = ballBodies.filter(b => b.color === COLOR_P1).length;
+        const blueBalls = ballBodies.filter(b => b.color === COLOR_P2).length;
 
         let statusText = currentPlayer === 1 
             ? `<span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>` 
             : `<span style="color:${COLOR_P2}">Jogador 2 (Azul)</span>`;
 
         if (ballInHand) {
-            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique na mesa para posicionar)</strong>`;
+            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique para posicionar)</strong>`;
         }
 
         playerNameEl.innerHTML = statusText;
-        ballsLeftEl.textContent = `🔴 ${redBallsLeft} | 🔵 ${blueBallsLeft}`;
+        ballsLeftEl.textContent = `🔴 ${redBalls} | 🔵 ${blueBalls}`;
         scoreEl.textContent = `P1: ${scoreP1} pts | P2: ${scoreP2} pts`;
     }
 
-    // Controle do Mouse (Posicionamento da Bola Branca / Mira)
+    function updatePowerBarUI() {
+        const percent = Math.round(power);
+        powerBarFill.style.height = `${percent}%`;
+        powerPercentage.textContent = `${percent}%`;
+    }
+
+    // --- MOUSE (MIRA E BOLA NA MÃO) ---
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mousePos.x = e.clientX - rect.left;
         mousePos.y = e.clientY - rect.top;
 
-        // Se estiver no modo "Bola na Mão", move a bola branca junto com o cursor
+        if (ballInHand && whiteBallBody) {
+            Body.setPosition(whiteBallBody, {
+                x: Math.max(BALL_RADIUS, Math.min(canvas.width - BALL_RADIUS, mousePos.x)),
+                y: Math.max(BALL_RADIUS, Math.min(canvas.height - BALL_RADIUS, mousePos.y))
+            });
+            Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
+        }
+    });
+
+    canvas.addEventListener('mousedown', () => {
         if (ballInHand) {
-            const whiteBall = balls[0];
-            if (whiteBall) {
-                // Restringe a bola branca para ficar dentro da mesa
-                whiteBall.x = Math.max(BALL_RADIUS, Math.min(canvas.width - BALL_RADIUS, mousePos.x));
-                whiteBall.y = Math.max(BALL_RADIUS, Math.min(canvas.height - BALL_RADIUS, mousePos.y));
+            ballInHand = false;
+            updateHUD();
+        }
+    });
+
+    // --- TECLADO (BARRA DE ESPAÇO) ---
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+            e.preventDefault();
+            const speed = Vector.magnitude(whiteBallBody.velocity);
+
+            if (!isShotInProgress && !ballInHand && speed < 0.08 && !isChargingPower) {
+                isChargingPower = true;
+                power = 0;
+                powerDirection = 1;
             }
         }
     });
 
-    canvas.addEventListener('mousedown', () => { 
-        const whiteBall = balls[0];
-
-        // Se estiver no modo Bola na Mão, um clique fixa a bola na posição
-        if (ballInHand) {
-            ballInHand = false;
-            updateHUD();
-            return;
-        }
-
-        // Só permite mirar se a jogada anterior já tiver terminado
-        if (!isShotInProgress && whiteBall && Math.abs(whiteBall.vx) < 0.05 && Math.abs(whiteBall.vy) < 0.05) {
-            isAiming = true; 
-            power = 0; 
-        }
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        if (isAiming && !ballInHand) {
-            const whiteBall = balls[0];
-            const dx = mousePos.x - whiteBall.x;
-            const dy = mousePos.y - whiteBall.y;
-            const angle = Math.atan2(dy, dx);
-            const force = Math.min(power, 15);
-
-            whiteBall.vx = Math.cos(angle) * force;
-            whiteBall.vy = Math.sin(angle) * force;
-
-            isAiming = false;
-            power = 0;
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'Space' && isChargingPower) {
+            e.preventDefault();
             
-            // Reseta contadores da jogada atual
+            const angle = Math.atan2(mousePos.y - whiteBallBody.position.y, mousePos.x - whiteBallBody.position.x);
+            // Impulso ajustado para permitir desde tacadas suaves até estouradas de mesa
+            const forceMagnitude = (power / 100) * 0.28; 
+
+            Body.applyForce(whiteBallBody, whiteBallBody.position, {
+                x: Math.cos(angle) * forceMagnitude,
+                y: Math.sin(angle) * forceMagnitude
+            });
+
+            isChargingPower = false;
             isShotInProgress = true;
-            playerScoredCurrentTurn = false;
-            firstBallHit = null;
-            whiteBallPocketed = false;
-            opponentBallPocketed = false;
+            
+            power = 0;
+            updatePowerBarUI();
         }
     });
 
     btnRestart.addEventListener('click', initGame);
 
-    // Resolução de Colisão entre Bolas
-    function resolveBallCollisions() {
-        for (let i = 0; i < balls.length; i++) {
-            for (let j = i + 1; j < balls.length; j++) {
-                const b1 = balls[i];
-                const b2 = balls[j];
+    // --- LOOP DE JOGO E RENDERIZAÇÃO ---
+    function gameLoop() {
+        Engine.update(engine, 1000 / 60);
 
-                const dx = b2.x - b1.x;
-                const dy = b2.y - b1.y;
-                const distance = Math.hypot(dx, dy);
-
-                if (distance < BALL_RADIUS * 2) {
-                    // Registra o primeiro toque da bola branca em outra bola
-                    if (b1.isWhite && !firstBallHit) {
-                        firstBallHit = b2;
-                    } else if (b2.isWhite && !firstBallHit) {
-                        firstBallHit = b1;
-                    }
-
-                    const overlap = (BALL_RADIUS * 2) - distance;
-                    const nx = dx / (distance || 1);
-                    const ny = dy / (distance || 1);
-
-                    b1.x -= nx * (overlap / 2);
-                    b1.y -= ny * (overlap / 2);
-                    b2.x += nx * (overlap / 2);
-                    b2.y += ny * (overlap / 2);
-
-                    const kx = b1.vx - b2.vx;
-                    const ky = b1.vy - b2.vy;
-                    const p = 2 * (nx * kx + ny * ky) / 2;
-
-                    b1.vx -= p * nx;
-                    b1.vy -= p * ny;
-                    b2.vx += p * nx;
-                    b2.vy += p * ny;
-                }
+        if (isChargingPower) {
+            power += powerDirection * 2.5;
+            if (power >= MAX_POWER) {
+                power = MAX_POWER;
+                powerDirection = -1;
+            } else if (power <= 0) {
+                power = 0;
+                powerDirection = 1;
             }
-        }
-    }
-
-    function updatePhysics() {
-        if (isAiming && power < 15) power += 0.3;
-
-        let anyBallMoving = false;
-
-        balls.forEach((ball) => {
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            ball.vx *= FRICTION;
-            ball.vy *= FRICTION;
-
-            if (Math.abs(ball.vx) < 0.05) ball.vx = 0;
-            if (Math.abs(ball.vy) < 0.05) ball.vy = 0;
-
-            if (ball.vx !== 0 || ball.vy !== 0) {
-                anyBallMoving = true;
-            }
-
-            if (ball.x - BALL_RADIUS < 0) {
-                ball.x = BALL_RADIUS;
-                ball.vx *= -1;
-            } else if (ball.x + BALL_RADIUS > canvas.width) {
-                ball.x = canvas.width - BALL_RADIUS;
-                ball.vx *= -1;
-            }
-
-            if (ball.y - BALL_RADIUS < 0) {
-                ball.y = BALL_RADIUS;
-                ball.vy *= -1;
-            } else if (ball.y + BALL_RADIUS > canvas.height) {
-                ball.y = canvas.height - BALL_RADIUS;
-                ball.vy *= -1;
-            }
-        });
-
-        resolveBallCollisions();
-
-        // Encaçapamento de bolas
-        for (let i = balls.length - 1; i >= 0; i--) {
-            const ball = balls[i];
-            pockets.forEach(pocket => {
-                const dist = Math.hypot(ball.x - pocket.x, ball.y - pocket.y);
-                if (dist < 20) {
-                    if (ball.isWhite) {
-                        whiteBallPocketed = true;
-                        ball.x = 200;
-                        ball.y = 200;
-                        ball.vx = 0;
-                        ball.vy = 0;
-                    } else {
-                        const targetMyColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
-
-                        if (ball.color === COLOR_P1) scoreP1 += 100;
-                        if (ball.color === COLOR_P2) scoreP2 += 100;
-
-                        if (ball.color === targetMyColor) {
-                            playerScoredCurrentTurn = true;
-                        } else {
-                            // Encaçapou a bola do adversário
-                            opponentBallPocketed = true;
-                        }
-
-                        balls.splice(i, 1);
-                        updateHUD();
-                    }
-                }
-            });
+            updatePowerBarUI();
         }
 
-        // FIM DA JOGADA: Executado quando todas as bolas pararam
-        if (isShotInProgress && !anyBallMoving) {
-            isShotInProgress = false;
-
-            const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
-            
-            // 1. Falta: Não atingiu nenhuma bola ou acertou primeiro a bola do adversário
-            const hitFoul = !firstBallHit || (firstBallHit.color !== myColor);
-            
-            // 2. Falta total se: errou a primeira bola, encaçapou a branca OU encaçapou a bola do oponente
-            const isFoul = hitFoul || whiteBallPocketed || opponentBallPocketed;
-
-            if (isFoul) {
-                // Passa a vez e ativa "Bola na Mão" para o próximo jogador
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-                ballInHand = true;
-            } else if (!playerScoredCurrentTurn) {
-                // Se não cometeu falta mas também não encaçapou a sua cor, apenas passa a vez normalmente
-                currentPlayer = currentPlayer === 1 ? 2 : 1;
-            }
-            // Se encaçapou a sua cor e não cometeu faltas, o jogador repete a jogada normalmente.
-
-            updateHUD();
-        }
-    }
-
-    function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Desenhar caçapas
+        // Caçapas
         ctx.fillStyle = '#000000';
         pockets.forEach(p => {
             ctx.beginPath();
             ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
             ctx.fill();
+
+            for (let i = ballBodies.length - 1; i >= 0; i--) {
+                const b = ballBodies[i];
+                const dist = Math.hypot(b.position.x - p.x, b.position.y - p.y);
+
+                if (dist < 18) {
+                    if (b.isWhite) {
+                        Body.setPosition(whiteBallBody, { x: 200, y: 200 });
+                        Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
+                        ballInHand = true;
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                    } else {
+                        if (b.color === COLOR_P1) scoreP1 += 100;
+                        if (b.color === COLOR_P2) scoreP2 += 100;
+
+                        World.remove(engine.world, b);
+                        ballBodies.splice(i, 1);
+                        updateHUD();
+                    }
+                }
+            }
         });
 
-        // Desenhar linha de pontaria com a cor do jogador atual
-        const whiteBall = balls[0];
-        if (whiteBall && isAiming && !isShotInProgress && !ballInHand) {
-            const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
-            
-            ctx.strokeStyle = playerColor;
-            ctx.lineWidth = 3 + (power / 5);
-            ctx.beginPath();
-            ctx.moveTo(whiteBall.x, whiteBall.y);
-            ctx.lineTo(mousePos.x, mousePos.y);
-            ctx.stroke();
-        }
-
-        // Desenhar indicador visual do modo "Bola na Mão"
-        if (ballInHand && whiteBall) {
+        // Guia de Mira Estilo 8 Ball Pool
+        if (!isShotInProgress && !ballInHand) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             ctx.strokeStyle = playerColor;
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(whiteBall.x, whiteBall.y, BALL_RADIUS + 6, 0, Math.PI * 2);
+            ctx.moveTo(whiteBallBody.position.x, whiteBallBody.position.y);
+            ctx.lineTo(mousePos.x, mousePos.y);
             ctx.stroke();
         }
 
-        // Desenhar bolas
-        balls.forEach(ball => {
+        // Desenhar Bolas
+        ballBodies.forEach(b => {
             ctx.beginPath();
-            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2);
-            ctx.fillStyle = ball.color;
+            ctx.arc(b.position.x, b.position.y, BALL_RADIUS, 0, Math.PI * 2);
+            ctx.fillStyle = b.color;
             ctx.fill();
             ctx.lineWidth = 1;
             ctx.strokeStyle = '#000';
             ctx.stroke();
         });
 
-        updatePhysics();
-        requestAnimationFrame(render);
+        // Verificação do Fim da Tacada
+        if (isShotInProgress) {
+            const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
+            if (totalSpeed < 0.03) {
+                isShotInProgress = false;
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+                updateHUD();
+            }
+        }
+
+        requestAnimationFrame(gameLoop);
     }
 
     initGame();
-    render();
+    gameLoop();
 });

@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>8-Ball Poccotó - Pocoto Games</title>
+    <!-- Estilos globais e locais -->
     <link rel="stylesheet" href="../home.css">
     <link rel="stylesheet" href="8ball.css">
 </head>
 <body>
+    <!-- Cabeçalho com identidade visual do Pocoto Games -->
     <header class="main-header">
         <div class="header-branding">
             <img src="../imagens/fc8af01b-68f0-4de5-a37d-a91e8eed5f08.webp" alt="8-Ball Poccotó" class="logo-img">
             <div>
                 <h1>Sinuca 8-Ball Poccotó</h1>
-                <p>Mesa de Bilhar do Cavalo Bançudo</p>
+                <p>Mesa de Bilhar do Cavalo Bançudo (2 Jogadores)</p>
             </div>
         </div>
         <div>
@@ -21,29 +23,45 @@
         </div>
     </header>
 
+    <!-- Área Principal do Minijogo -->
     <main class="game-container">
         <div class="game-card">
+            <!-- Painel Informativo HUD -->
             <div class="game-hud">
-                <span class="hud-item">Jogador: <strong id="player-name">Gamer</strong></span>
-                <span class="hud-item">Bolas Restantes: <strong id="balls-left">7</strong></span>
-                <span class="hud-item">Pontuação: <strong id="score">0</strong></span>
+                <span class="hud-item">Vez: <strong id="player-name">Jogador 1</strong></span>
+                <span class="hud-item">Bolas Restantes: <strong id="balls-left">🔴 8 | 🔵 8</strong></span>
+                <span class="hud-item">Pontuação: <strong id="score">P1: 0 pts | P2: 0 pts</strong></span>
             </div>
 
+            <!-- Wrapper do Canvas com a Barra de Força Lateral -->
             <div class="canvas-wrapper">
                 <canvas id="poolTable" width="800" height="400"></canvas>
+                
+                <!-- Barra de Força Vertical -->
+                <div class="power-bar-container">
+                    <div class="power-bar-label">Força</div>
+                    <div class="power-bar-track">
+                        <div id="power-bar-fill" class="power-bar-fill"></div>
+                    </div>
+                    <span id="power-percentage" class="power-percentage">0%</span>
+                </div>
             </div>
 
+            <!-- Painel de Controles -->
             <div class="controls-panel">
-                <p>💡 <strong>Como Jogar:</strong> Ajusta o ângulo com o rato/mouse, mantém o botão premido para carregar a força do taco e solta para tacar!</p>
+                <p>💡 <strong>Como Jogar:</strong> Mova o mouse para mirar. Mantenha pressionada a <strong>BARRA DE ESPAÇO</strong> para carregar a força na barra lateral e solte para dar a tacada!</p>
                 <button id="btn-restart" class="btn-primary">Reiniciar Partida</button>
             </div>
         </div>
     </main>
 
+    <!-- Rodapé -->
     <footer>
         <p>&copy; 2026 Pocoto Games - Todos os direitos reservados.</p>
     </footer>
 
+    <!-- Matter.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
     <script src="8ball.js"></script>
 </body>
 </html>
