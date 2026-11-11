@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (FÍSICA MATTER.JS + BORDAS CORRIGIDAS)
+   POCOTO GAMES - 8-BALL (QUINAS VISÍVEIS E FÍSICA DESENHADA)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -11,27 +11,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const ballsLeftEl = document.getElementById('balls-left');
     const scoreEl = document.getElementById('score');
 
-    // Elementos da Barra de Força
     const powerBarFill = document.getElementById('power-bar-fill');
     const powerPercentage = document.getElementById('power-percentage');
 
-    // Módulos do Matter.js
     const { Engine, World, Bodies, Body, Vector } = Matter;
 
     const engine = Engine.create();
     engine.gravity.y = 0;
     engine.gravity.x = 0;
 
-    // Configurações Globais
     const BALL_RADIUS = 10;
-    const COLOR_P1 = '#e53935'; // Vermelho (Jogador 1)
-    const COLOR_P2 = '#1e88e5'; // Azul (Jogador 2)
+    const COLOR_P1 = '#e53935'; 
+    const COLOR_P2 = '#1e88e5'; 
 
     let currentPlayer = 1;
     let scoreP1 = 0;
     let scoreP2 = 0;
     
-    // Controle de Carregamento de Força
     let isChargingPower = false;
     let power = 0; 
     let powerDirection = 1;
@@ -45,9 +41,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let ballBodies = [];
 
     // Caçapas
+    const POCKET_RADIUS = 20;
     const pockets = [
-        { x: 15, y: 15 }, { x: 400, y: 10 }, { x: 785, y: 15 },
-        { x: 15, y: 385 }, { x: 400, y: 390 }, { x: 785, y: 385 }
+        { x: 22, y: 22 },    // Superior Esquerda
+        { x: 400, y: 15 },   // Superior Central
+        { x: 778, y: 22 },   // Superior Direita
+        { x: 22, y: 378 },   // Inferior Esquerda
+        { x: 400, y: 385 },  // Inferior Central
+        { x: 778, y: 378 }   // Inferior Direita
+    ];
+
+    // Vértices Visuais e Físicos das 6 Tabelas com Quinas (Bicos)
+    const wallDefs = [
+        // Superior Esquerda
+        [{ x: 45, y: 0 }, { x: 375, y: 0 }, { x: 365, y: 28 }, { x: 58, y: 28 }],
+        // Superior Direita
+        [{ x: 425, y: 0 }, { x: 755, y: 0 }, { x: 742, y: 28 }, { x: 435, y: 28 }],
+        // Inferior Esquerda
+        [{ x: 58, y: 372 }, { x: 365, y: 372 }, { x: 375, y: 400 }, { x: 45, y: 400 }],
+        // Inferior Direita
+        [{ x: 435, y: 372 }, { x: 742, y: 372 }, { x: 755, y: 400 }, { x: 425, y: 400 }],
+        // Lateral Esquerda
+        [{ x: 0, y: 45 }, { x: 28, y: 58 }, { x: 28, y: 342 }, { x: 0, y: 355 }],
+        // Lateral Direita
+        [{ x: 772, y: 58 }, { x: 800, y: 45 }, { x: 800, y: 355 }, { x: 772, y: 342 }]
     ];
 
     function initGame() {
@@ -62,33 +79,22 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePowerBarUI();
         ballBodies = [];
 
-        // --- CORREÇÃO DAS BORDAS / TABELAS DA MESA ---
-        // Espessura robusta de 40px para impedir que as bolas atravessem a borda
-        const wallThickness = 40;
-        const wallPhysicsOptions = { 
-            isStatic: true, 
-            restitution: 0.98, // Alta elasticidade de quique nas tabelas
-            friction: 0.0 
-        };
+        // Criar corpos físicos idênticos aos vértices gráficos das tabelas
+        const wallPhysics = { isStatic: true, restitution: 0.96, friction: 0.0 };
+        wallDefs.forEach(pts => {
+            // Calcula o centro do polígono para a Matter.js
+            const cx = pts.reduce((sum, p) => sum + p.x, 0) / pts.length;
+            const cy = pts.reduce((sum, p) => sum + p.y, 0) / pts.length;
+            const wall = Bodies.fromVertices(cx, cy, [pts], wallPhysics);
+            World.add(engine.world, wall);
+        });
 
-        const walls = [
-            // Parede Superior
-            Bodies.rectangle(400, -wallThickness / 2, 800 + wallThickness * 2, wallThickness, wallPhysicsOptions),
-            // Parede Inferior
-            Bodies.rectangle(400, 400 + wallThickness / 2, 800 + wallThickness * 2, wallThickness, wallPhysicsOptions),
-            // Parede Esquerda
-            Bodies.rectangle(-wallThickness / 2, 200, wallThickness, 400 + wallThickness * 2, wallPhysicsOptions),
-            // Parede Direita
-            Bodies.rectangle(800 + wallThickness / 2, 200, wallThickness, 400 + wallThickness * 2, wallPhysicsOptions)
-        ];
-        World.add(engine.world, walls);
-
-        // Física Estilo 8 Ball Pool para as Bolas
+        // Física das Bolas
         const poolBallPhysics = {
-            restitution: 0.99,   // Transferência de momento quase perfeita
-            friction: 0.0,       // Sem resistência ao tangenciar outras bolas
-            frictionAir: 0.0035, // Desaceleração suave do pano
-            density: 0.04
+            restitution: 0.99,   
+            friction: 0.0,       
+            frictionAir: 0.0035, 
+            density: 0.04        
         };
 
         // Bola Branca
@@ -98,19 +104,17 @@ document.addEventListener('DOMContentLoaded', () => {
         World.add(engine.world, whiteBallBody);
         ballBodies.push(whiteBallBody);
 
-        // 16 Bolas Alvo (8 Vermelhas e 8 Azuis)
+        // 16 Bolas Alvo
         const targetColors = [
             COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2,
             COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1
         ];
 
-        // Embaralhamento Aleatório (Fisher-Yates)
         for (let i = targetColors.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [targetColors[i], targetColors[j]] = [targetColors[j], targetColors[i]];
         }
 
-        // Montagem do Triângulo
         let startX = 530;
         let startY = 200;
         let index = 0;
@@ -140,7 +144,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function setBallInHand(active) {
         ballInHand = active;
         if (whiteBallBody) {
-            // Quando a bola está na mão, vira sensor para não trombar com as outras bolas enquanto posiciona
             whiteBallBody.isSensor = active;
         }
         updateHUD();
@@ -155,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : `<span style="color:${COLOR_P2}">Jogador 2 (Azul)</span>`;
 
         if (ballInHand) {
-            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique na mesa para posicionar)</strong>`;
+            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique para posicionar)</strong>`;
         }
 
         playerNameEl.innerHTML = statusText;
@@ -169,17 +172,16 @@ document.addEventListener('DOMContentLoaded', () => {
         powerPercentage.textContent = `${percent}%`;
     }
 
-    // --- MOUSE (MIRA E BOLA NA MÃO) ---
+    // --- CONTROLE DE MOUSE ---
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mousePos.x = e.clientX - rect.left;
         mousePos.y = e.clientY - rect.top;
 
         if (ballInHand && whiteBallBody) {
-            // Mantém a bola branca estritamente dentro da mesa ao posicionar
             Body.setPosition(whiteBallBody, {
-                x: Math.max(BALL_RADIUS + 5, Math.min(canvas.width - BALL_RADIUS - 5, mousePos.x)),
-                y: Math.max(BALL_RADIUS + 5, Math.min(canvas.height - BALL_RADIUS - 5, mousePos.y))
+                x: Math.max(BALL_RADIUS + 30, Math.min(canvas.width - BALL_RADIUS - 30, mousePos.x)),
+                y: Math.max(BALL_RADIUS + 30, Math.min(canvas.height - BALL_RADIUS - 30, mousePos.y))
             });
             Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
         }
@@ -187,18 +189,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('mousedown', () => {
         if (ballInHand) {
-            // Confirma a posição e reativa o quique físico da bola branca
             setBallInHand(false);
         }
     });
 
-    // --- TECLADO (BARRA DE ESPAÇO) ---
+    // --- CONTROLE DE TECLADO (BARRA DE ESPAÇO) ---
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             e.preventDefault();
             const speed = Vector.magnitude(whiteBallBody.velocity);
 
-            if (!isShotInProgress && !ballInHand && speed < 0.08 && !isChargingPower) {
+            if (!isShotInProgress && !ballInHand && speed < 0.05 && !isChargingPower) {
                 isChargingPower = true;
                 power = 0;
                 powerDirection = 1;
@@ -211,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             
             const angle = Math.atan2(mousePos.y - whiteBallBody.position.y, mousePos.x - whiteBallBody.position.x);
-            const forceMagnitude = (power / 100) * 0.28; 
+            const forceMagnitude = (power / 100) * 0.30; 
 
             Body.applyForce(whiteBallBody, whiteBallBody.position, {
                 x: Math.cos(angle) * forceMagnitude,
@@ -228,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnRestart.addEventListener('click', initGame);
 
-    // --- LOOP DE JOGO E RENDERIZAÇÃO ---
+    // --- RENDERIZAÇÃO GRÁFICA DO JOGO ---
     function gameLoop() {
         Engine.update(engine, 1000 / 60);
 
@@ -244,20 +245,25 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePowerBarUI();
         }
 
+        // Limpa a mesa
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Caçapas
-        ctx.fillStyle = '#000000';
+        // 1. DESENHAR AS CAÇAPAS (BURACOS)
+        ctx.fillStyle = '#050505';
         pockets.forEach(p => {
             ctx.beginPath();
-            ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, POCKET_RADIUS, 0, Math.PI * 2);
             ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#22150c';
+            ctx.stroke();
 
+            // Verificação de Encaçapamento
             for (let i = ballBodies.length - 1; i >= 0; i--) {
                 const b = ballBodies[i];
                 const dist = Math.hypot(b.position.x - p.x, b.position.y - p.y);
 
-                if (dist < 18) {
+                if (dist < POCKET_RADIUS - 2) {
                     if (b.isWhite) {
                         Body.setPosition(whiteBallBody, { x: 200, y: 200 });
                         Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
@@ -275,7 +281,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Indicador de Bola na Mão
+        // 2. DESENHAR AS TABELAS VISÍVEIS COM QUINAS CHANFRADAS (BICOS)
+        ctx.fillStyle = '#2e7d32'; // Tom verde de borracha das tabelas
+        ctx.strokeStyle = '#1b5e20';
+        ctx.lineWidth = 2;
+
+        wallDefs.forEach(pts => {
+            ctx.beginPath();
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+                ctx.lineTo(pts[i].x, pts[i].y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Destacar os bicos/quinas das pontas com acabamento escuro
+            ctx.fillStyle = '#111111';
+            ctx.beginPath();
+            ctx.arc(pts[2].x, pts[2].y, 3, 0, Math.PI * 2);
+            ctx.arc(pts[3].x, pts[3].y, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#2e7d32'; // Restaura cor verde das tabelas
+        });
+
+        // 3. INDICADOR DE BOLA NA MÃO
         if (ballInHand && whiteBallBody) {
             ctx.strokeStyle = '#FFD700';
             ctx.lineWidth = 2;
@@ -286,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.setLineDash([]);
         }
 
-        // Guia de Mira
+        // 4. GUIA DE MIRA
         if (!isShotInProgress && !ballInHand) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             ctx.strokeStyle = playerColor;
@@ -297,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         }
 
-        // Desenhar Bolas
+        // 5. DESENHAR BOLAS
         ballBodies.forEach(b => {
             ctx.beginPath();
             ctx.arc(b.position.x, b.position.y, BALL_RADIUS, 0, Math.PI * 2);
@@ -308,10 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         });
 
-        // Fim da Tacada
+        // 6. VERIFICAÇÃO DO FIM DA TACADA
         if (isShotInProgress) {
             const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
-            if (totalSpeed < 0.03) {
+            if (totalSpeed < 0.02) {
                 isShotInProgress = false;
                 currentPlayer = currentPlayer === 1 ? 2 : 1;
                 updateHUD();

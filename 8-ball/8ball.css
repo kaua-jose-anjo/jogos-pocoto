@@ -1,13 +1,17 @@
 /* =========================================================
    POCOTO GAMES - JOGO 8-BALL (8-ball/style_8ball.css)
+   Cores Temáticas:
+   - Primária: Marrom Claro (#8B5A2B)
+   - Secundária: Verde Escuro (#1E4620 / #2E6F32)
    ========================================================= */
 
 .game-container {
-    max-width: 960px;
+    max-width: 980px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
 
+/* Card Principal do Jogo */
 .game-card {
     background-color: var(--card-bg, #FFFFFF);
     border-radius: 20px;
@@ -18,6 +22,7 @@
     text-align: center;
 }
 
+/* Painel de Estatísticas / Placar (HUD) */
 .game-hud {
     display: flex;
     justify-content: space-around;
@@ -43,25 +48,28 @@
     font-weight: 700;
 }
 
-/* Wrapper do Canvas com alinhamento flexível para a barra de força */
+/* Wrapper do Canvas e Alinhamento da Barra Lateral */
 .canvas-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 1.2rem;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
     overflow-x: auto;
 }
 
+/* Mesa de Bilhar (Canvas com moldura de madeira) */
 #poolTable {
-    background-color: #1a5e20;
-    border: 16px solid #5d4037;
-    border-radius: 18px;
+    background-color: #1a5e20; /* Feltro verde clássico */
+    border: 18px solid #5d4037; /* Moldura de madeira maciça */
+    border-radius: 22px;
     box-shadow: 
-        inset 0 0 20px rgba(0, 0, 0, 0.6), 
-        0 10px 25px rgba(0, 0, 0, 0.3);
+        inset 0 0 25px rgba(0, 0, 0, 0.75), 
+        0 12px 28px rgba(0, 0, 0, 0.35);
     cursor: crosshair;
     display: block;
+    max-width: 100%;
+    height: auto;
 }
 
 /* Barra de Força Vertical Lateral */
@@ -70,12 +78,12 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    height: 400px; /* Mesma altura do canvas */
+    height: 400px; /* Igual à altura da mesa */
     background-color: #2D251E;
-    padding: 0.8rem 0.5rem;
-    border-radius: 12px;
+    padding: 0.8rem 0.6rem;
+    border-radius: 14px;
     border: 3px solid #5d4037;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
 .power-bar-label {
@@ -83,11 +91,11 @@
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
 }
 
 .power-bar-track {
-    width: 22px;
+    width: 24px;
     height: 310px;
     background-color: #1A1410;
     border-radius: 10px;
@@ -108,10 +116,11 @@
 
 .power-percentage {
     color: #FFD700;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
 }
 
+/* Painel de Instruções e Botões */
 .controls-panel {
     display: flex;
     flex-direction: column;
@@ -132,6 +141,7 @@
     border-left: 4px solid var(--secondary-green-accent, #2E6F32);
 }
 
+/* Botão de Reiniciar Partida */
 #btn-restart {
     padding: 0.85rem 2rem;
     font-size: 1rem;
@@ -151,23 +161,35 @@
     box-shadow: 0 6px 16px rgba(139, 90, 43, 0.4);
 }
 
-@media (max-width: 700px) {
+#btn-restart:active {
+    transform: translateY(0);
+}
+
+/* Responsividade para Ecrãs Menores */
+@media (max-width: 720px) {
     .canvas-wrapper {
         flex-direction: column;
     }
+
     .power-bar-container {
         height: auto;
         width: 100%;
-        max-width: 300px;
+        max-width: 320px;
     }
+
     .power-bar-track {
         width: 100%;
-        height: 20px;
+        height: 22px;
         flex-direction: row;
     }
+
     .power-bar-fill {
         height: 100%;
         width: 0%;
         background: linear-gradient(90deg, #43a047 0%, #fdd835 60%, #e53935 100%);
+    }
+
+    #poolTable {
+        border-width: 12px;
     }
 }
