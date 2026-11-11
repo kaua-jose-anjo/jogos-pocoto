@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (MODO CONTRA IA INCLUÍDO)
+   POCOTO GAMES - 8-BALL (FÍSICA DE 6 TABELAS RETANGULARES INDEPENDENTES)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -24,8 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const COLOR_P1 = '#e53935'; // Vermelho (Jogador 1)
     const COLOR_P2 = '#1e88e5'; // Azul (Jogador 2 / IA)
 
-    let vsAI = false; // Alterna entre PvP (false) e PvE/Contra IA (true)
+    let vsAI = false;
     let isAITurn = false;
+    let isFirstShot = true;
 
     let currentPlayer = 1;
     let scoreP1 = 0;
@@ -40,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let ballInHand = false;
     let isShotInProgress = false;
 
-    // Registos de Infrações
     let firstBallHit = null;      
     let pottedThisTurn = [];      
     let cueBallPotted = false;    
@@ -48,26 +48,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let whiteBallBody = null;
     let ballBodies = [];
 
+    // Posições das 6 Caçapas
     const POCKET_RADIUS = 20;
     const pockets = [
-        { x: 22, y: 22 },    
-        { x: 400, y: 15 },   
-        { x: 778, y: 22 },   
-        { x: 22, y: 378 },   
-        { x: 400, y: 385 },  
-        { x: 778, y: 378 }   
+        { x: 25, y: 25 },    
+        { x: 400, y: 18 },   
+        { x: 775, y: 25 },   
+        { x: 25, y: 375 },   
+        { x: 400, y: 382 },  
+        { x: 775, y: 375 }   
     ];
 
-    const wallDefs = [
-        [{ x: 45, y: 0 }, { x: 375, y: 0 }, { x: 365, y: 28 }, { x: 58, y: 28 }],
-        [{ x: 425, y: 0 }, { x: 755, y: 0 }, { x: 742, y: 28 }, { x: 435, y: 28 }],
-        [{ x: 58, y: 372 }, { x: 365, y: 372 }, { x: 375, y: 400 }, { x: 45, y: 400 }],
-        [{ x: 435, y: 372 }, { x: 755, y: 372 }, { x: 770, y: 400 }, { x: 425, y: 400 }],
-        [{ x: 0, y: 45 }, { x: 28, y: 58 }, { x: 28, y: 342 }, { x: 0, y: 355 }],
-        [{ x: 772, y: 58 }, { x: 800, y: 45 }, { x: 800, y: 355 }, { x: 772, y: 342 }]
+    // Vértices Apenas para Renderização Visual das Quinas Chanfradas (Verde Claro)
+    const wallVisualDefs = [
+        [{ x: 50, y: 10 }, { x: 375, y: 10 }, { x: 365, y: 30 }, { x: 62, y: 30 }],
+        [{ x: 425, y: 10 }, { x: 750, y: 10 }, { x: 738, y: 30 }, { x: 435, y: 30 }],
+        [{ x: 62, y: 370 }, { x: 365, y: 370 }, { x: 375, y: 390 }, { x: 50, y: 390 }],
+        [{ x: 435, y: 370 }, { x: 738, y: 370 }, { x: 750, y: 390 }, { x: 425, y: 390 }],
+        [{ x: 10, y: 50 }, { x: 30, y: 62 }, { x: 30, y: 338 }, { x: 10, y: 350 }],
+        [{ x: 770, y: 62 }, { x: 790, y: 50 }, { x: 790, y: 350 }, { x: 770, y: 338 }]
     ];
 
-    // Detetar o Primeiro Toque
+    // Registra o Primeiro Toque da Branca na Tacada
     Events.on(engine, 'collisionStart', (event) => {
         if (!isShotInProgress || firstBallHit !== null) return;
 
@@ -90,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentPlayer = 1;
         isAITurn = false;
+        isFirstShot = true;
         scoreP1 = 0;
         scoreP2 = 0;
         isShotInProgress = false;
@@ -101,20 +104,32 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePowerBarUI();
         ballBodies = [];
 
-        const wallPhysics = { isStatic: true, restitution: 0.96, friction: 0.0 };
-        wallDefs.forEach(pts => {
-            const cx = pts.reduce((sum, p) => sum + p.x, 0) / pts.length;
-            const cy = pts.reduce((sum, p) => sum + p.y, 0) / pts.length;
-            
-            let wall;
-            if (typeof Matter.Vertices !== 'undefined' && window.decomp) {
-                wall = Bodies.fromVertices(cx, cy, [pts], wallPhysics);
-            } else {
-                wall = Bodies.rectangle(cx, cy, 300, 20, wallPhysics);
-            }
-            World.add(engine.world, wall);
-        });
+        const wallPhysics = { isStatic: true, restitution: 0.98, friction: 0.0 };
 
+        // --- 6 PAREDES RETANGULARES COM FÍSICA PRÓPRIA (ZONA VERDE CLARO) ---
+        const tableWalls = [
+            // Topo Esquerda e Direita
+            Bodies.rectangle(212.5, 20, 312.5, 20, wallPhysics),
+            Bodies.rectangle(587.5, 20, 312.5, 20, wallPhysics),
+            // Inferior Esquerda e Direita
+            Bodies.rectangle(212.5, 380, 312.5, 20, wallPhysics),
+            Bodies.rectangle(587.5, 380, 312.5, 20, wallPhysics),
+            // Lateral Esquerda e Direita
+            Bodies.rectangle(20, 200, 20, 276, wallPhysics),
+            Bodies.rectangle(780, 200, 20, 276, wallPhysics)
+        ];
+        World.add(engine.world, tableWalls);
+
+        // Parede Externa Invisível de Segurança
+        const outerWalls = [
+            Bodies.rectangle(400, -10, 840, 20, wallPhysics),
+            Bodies.rectangle(400, 410, 840, 20, wallPhysics),
+            Bodies.rectangle(-10, 200, 20, 440, wallPhysics),
+            Bodies.rectangle(810, 200, 20, 440, wallPhysics)
+        ];
+        World.add(engine.world, outerWalls);
+
+        // Física das Bolas
         const poolBallPhysics = {
             restitution: 0.99,   
             friction: 0.0,       
@@ -122,14 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
             density: 0.04        
         };
 
-        // Branca
+        // Bola Branca
         whiteBallBody = Bodies.circle(200, 200, BALL_RADIUS, poolBallPhysics);
         whiteBallBody.isWhite = true;
         whiteBallBody.color = '#ffffff';
         World.add(engine.world, whiteBallBody);
         ballBodies.push(whiteBallBody);
 
-        // Bolas Alvo
+        // 16 Bolas Alvo
         const targetColors = [
             COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2,
             COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1
@@ -186,7 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>` 
             : `<span style="color:${COLOR_P2}">${p2Label}</span>`;
 
-        if (foulMessage) {
+        if (isFirstShot) {
+            statusText += ` <strong style="color: #FFD700;">💥 ESTOURADA INICIAL</strong>`;
+        } else if (foulMessage) {
             statusText += ` <strong style="color: #ff5252;">⚠️ INFRAÇÃO: ${foulMessage}</strong>`;
         } else if (ballInHand) {
             statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO!</strong>`;
@@ -203,28 +220,22 @@ document.addEventListener('DOMContentLoaded', () => {
         powerPercentage.textContent = `${percent}%`;
     }
 
-    /* =========================================================
-       LÓGICA DA INTELIGÊNCIA ARTIFICIAL (IA)
-       ========================================================= */
     function playAITurn() {
         if (!vsAI || currentPlayer !== 2 || isShotInProgress) return;
 
         isAITurn = true;
 
-        // Se a IA tiver bola na mão, posiciona a branca na zona de partida
         if (ballInHand) {
             Body.setPosition(whiteBallBody, { x: 200, y: 200 + (Math.random() * 60 - 30) });
             setBallInHand(false);
         }
 
         setTimeout(() => {
-            // Procura as bolas do Jogador 2 (Azuis)
             const aiBalls = ballBodies.filter(b => b.color === COLOR_P2);
             let targetBall = null;
             let bestPocket = null;
             let minDistance = Infinity;
 
-            // Encontra a bola azul mais próxima de qualquer caçapa
             aiBalls.forEach(ball => {
                 pockets.forEach(pocket => {
                     const dist = Math.hypot(ball.position.x - pocket.x, ball.position.y - pocket.y);
@@ -236,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
-            // Se não houver bolas azuis (ou fallback), escolhe a bola mais próxima da branca
             if (!targetBall) {
                 const targetCandidates = ballBodies.filter(b => !b.isWhite);
                 if (targetCandidates.length > 0) {
@@ -245,8 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             let aimAngle = 0;
-            if (targetBall) {
-                // Calcula o vetor de impacto necessário entre a bola azul e a caçapa
+            if (targetBall && bestPocket) {
                 const pocketAngle = Math.atan2(bestPocket.y - targetBall.position.y, bestPocket.x - targetBall.position.x);
                 const ghostX = targetBall.position.x - Math.cos(pocketAngle) * (BALL_RADIUS * 2);
                 const ghostY = targetBall.position.y - Math.sin(pocketAngle) * (BALL_RADIUS * 2);
@@ -256,7 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 aimAngle = Math.random() * Math.PI * 2;
             }
 
-            // Simula o carregamento e disparo da IA
             const aiPower = Math.floor(Math.random() * 35) + 45; 
             const forceMagnitude = (aiPower / 100) * 0.28;
 
@@ -274,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 800);
     }
 
-    // Eventos de Mouse e Teclado
     canvas.addEventListener('mousemove', (e) => {
         if (isAITurn) return;
         const rect = canvas.getBoundingClientRect();
@@ -283,8 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (ballInHand && whiteBallBody && currentPlayer === 1) {
             Body.setPosition(whiteBallBody, {
-                x: Math.max(BALL_RADIUS + 30, Math.min(canvas.width - BALL_RADIUS - 30, mousePos.x)),
-                y: Math.max(BALL_RADIUS + 30, Math.min(canvas.height - BALL_RADIUS - 30, mousePos.y))
+                x: Math.max(35 + BALL_RADIUS, Math.min(765 - BALL_RADIUS, mousePos.x)),
+                y: Math.max(35 + BALL_RADIUS, Math.min(365 - BALL_RADIUS, mousePos.y))
             });
             Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
         }
@@ -334,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnRestart.addEventListener('click', initGame);
 
-    // Botão de Seleção de Modo (PvP vs IA)
     const btnToggleAI = document.createElement('button');
     btnToggleAI.id = 'btn-toggle-ai';
     btnToggleAI.textContent = 'Modo: 2 Jogadores (PvP)';
@@ -354,6 +360,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
         Engine.update(engine, 1000 / 60);
 
+        // CORTE AUTOMÁTICO DE VELOCIDADE (STOP THRESHOLD)
+        const STOP_THRESHOLD = 0.15;
+        ballBodies.forEach(b => {
+            const currentSpeed = Vector.magnitude(b.velocity);
+            if (currentSpeed > 0 && currentSpeed < STOP_THRESHOLD) {
+                Body.setVelocity(b, { x: 0, y: 0 });
+                Body.setAngularVelocity(b, 0);
+            }
+        });
+
         if (isChargingPower) {
             power += powerDirection * 2.5;
             if (power >= MAX_POWER) { power = MAX_POWER; powerDirection = -1; }
@@ -361,10 +377,12 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePowerBarUI();
         }
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // 1. PANO VERDE DA MESA
+        ctx.fillStyle = '#1e5622';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Renderizar Caçapas
-        ctx.fillStyle = '#050505';
+        // 2. CAÇAPAS E ENCAÇAPAMENTOS
+        ctx.fillStyle = '#0a0a0a';
         pockets.forEach(p => {
             ctx.beginPath();
             ctx.arc(p.x, p.y, POCKET_RADIUS, 0, Math.PI * 2);
@@ -395,12 +413,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Renderizar Tabelas
-        ctx.fillStyle = '#2e7d32';
-        ctx.strokeStyle = '#1b5e20';
+        // 3. DESENHO VISUAL DAS TABELAS VERDE CLARO E PONTOS DE QUINA
+        ctx.fillStyle = '#388e3c';
+        ctx.strokeStyle = '#2e7d32';
         ctx.lineWidth = 2;
 
-        wallDefs.forEach(pts => {
+        wallVisualDefs.forEach(pts => {
             ctx.beginPath();
             ctx.moveTo(pts[0].x, pts[0].y);
             for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -413,10 +431,20 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.arc(pts[2].x, pts[2].y, 3, 0, Math.PI * 2);
             ctx.arc(pts[3].x, pts[3].y, 3, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#2e7d32';
+            ctx.fillStyle = '#388e3c';
         });
 
-        // Mira e Desenho de Bolas
+        // 4. GUIA DE MIRA E BOLA NA MÃO
+        if (ballInHand && whiteBallBody) {
+            ctx.strokeStyle = '#FFD700';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.arc(whiteBallBody.position.x, whiteBallBody.position.y, BALL_RADIUS + 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
         if (!isShotInProgress && !ballInHand && !isAITurn) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             ctx.strokeStyle = playerColor;
@@ -427,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         }
 
+        // 5. DESENHAR BOLAS
         ballBodies.forEach(b => {
             ctx.beginPath();
             ctx.arc(b.position.x, b.position.y, BALL_RADIUS, 0, Math.PI * 2);
@@ -437,10 +466,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         });
 
-        // Regra de Fim de Tacada
+        // 6. PROCESSAR FIM DA TACADA E AVALIAR INFRAÇÕES
         if (isShotInProgress) {
             const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
-            if (totalSpeed < 0.02) {
+            if (totalSpeed < 1) {
                 isShotInProgress = false;
 
                 const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
@@ -452,12 +481,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cueBallPotted) {
                     isFoul = true;
                     foulReason = "Encaçapou a bola branca!";
-                } else if (firstBallHit === null) {
-                    isFoul = true;
-                    foulReason = "Não tocou em nenhuma bola!";
-                } else if (firstBallHit.color === opponentColor) {
-                    isFoul = true;
-                    foulReason = "Primeiro toque foi na bola do adversário!";
+                } else if (!isFirstShot) {
+                    if (firstBallHit === null) {
+                        isFoul = true;
+                        foulReason = "Não tocou em nenhuma bola!";
+                    } else if (firstBallHit.color === opponentColor) {
+                        isFoul = true;
+                        foulReason = "Primeiro toque foi na bola do adversário!";
+                    }
+                }
+
+                if (isFirstShot) {
+                    isFirstShot = false;
                 }
 
                 if (isFoul) {
@@ -475,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 pottedThisTurn = [];
                 cueBallPotted = false;
 
-                // Executa a tacada da IA se for o turno dela
                 if (vsAI && currentPlayer === 2) {
                     playAITurn();
                 }
