@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (ESTILO 8 BALL POOL + BOLA NA MÃO SEM COLISÃO)
+   POCOTO GAMES - 8-BALL (FÍSICA MATTER.JS + BORDAS CORRIGIDAS)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -56,29 +56,34 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPlayer = 1;
         scoreP1 = 0;
         scoreP2 = 0;
-        ballInHand = false;
         isShotInProgress = false;
         isChargingPower = false;
         power = 0;
         updatePowerBarUI();
         ballBodies = [];
 
-        // Paredes Limítrofes (Tabelas)
+        // --- CORREÇÃO DAS BORDAS / TABELAS DA MESA ---
+        // Espessura robusta de 40px para impedir que as bolas atravessem a borda
+        const wallThickness = 40;
         const wallPhysicsOptions = { 
             isStatic: true, 
-            restitution: 0.98, 
+            restitution: 0.98, // Alta elasticidade de quique nas tabelas
             friction: 0.0 
         };
 
         const walls = [
-            Bodies.rectangle(400, -10, 800, 20, wallPhysicsOptions),
-            Bodies.rectangle(400, 410, 800, 20, wallPhysicsOptions),
-            Bodies.rectangle(-10, 200, 20, 400, wallPhysicsOptions),
-            Bodies.rectangle(810, 200, 20, 400, wallPhysicsOptions)
+            // Parede Superior
+            Bodies.rectangle(400, -wallThickness / 2, 800 + wallThickness * 2, wallThickness, wallPhysicsOptions),
+            // Parede Inferior
+            Bodies.rectangle(400, 400 + wallThickness / 2, 800 + wallThickness * 2, wallThickness, wallPhysicsOptions),
+            // Parede Esquerda
+            Bodies.rectangle(-wallThickness / 2, 200, wallThickness, 400 + wallThickness * 2, wallPhysicsOptions),
+            // Parede Direita
+            Bodies.rectangle(800 + wallThickness / 2, 200, wallThickness, 400 + wallThickness * 2, wallPhysicsOptions)
         ];
         World.add(engine.world, walls);
 
-        // Física Estilo 8 Ball Pool
+        // Física Estilo 8 Ball Pool para as Bolas
         const poolBallPhysics = {
             restitution: 0.99,   // Transferência de momento quase perfeita
             friction: 0.0,       // Sem resistência ao tangenciar outras bolas
@@ -128,13 +133,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
-        updateHUD();
+        
+        setBallInHand(false);
     }
 
     function setBallInHand(active) {
         ballInHand = active;
         if (whiteBallBody) {
-            // Desativa as colisões físicas enquanto a bola estiver na mão
+            // Quando a bola está na mão, vira sensor para não trombar com as outras bolas enquanto posiciona
             whiteBallBody.isSensor = active;
         }
         updateHUD();
@@ -170,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mousePos.y = e.clientY - rect.top;
 
         if (ballInHand && whiteBallBody) {
-            // Reposiciona a branca sem colidir com as outras bolas
+            // Mantém a bola branca estritamente dentro da mesa ao posicionar
             Body.setPosition(whiteBallBody, {
                 x: Math.max(BALL_RADIUS + 5, Math.min(canvas.width - BALL_RADIUS - 5, mousePos.x)),
                 y: Math.max(BALL_RADIUS + 5, Math.min(canvas.height - BALL_RADIUS - 5, mousePos.y))
@@ -181,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('mousedown', () => {
         if (ballInHand) {
-            // Confirma a posição e reativa as colisões normais da bola branca
+            // Confirma a posição e reativa o quique físico da bola branca
             setBallInHand(false);
         }
     });
@@ -253,7 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (dist < 18) {
                     if (b.isWhite) {
-                        // Reseta a branca e ativa bola na mão (desativando colisões)
                         Body.setPosition(whiteBallBody, { x: 200, y: 200 });
                         Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
                         currentPlayer = currentPlayer === 1 ? 2 : 1;
@@ -270,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Desenhar indicador visual de Bola na Mão (Aura amarela ao redor da branca)
+        // Indicador de Bola na Mão
         if (ballInHand && whiteBallBody) {
             ctx.strokeStyle = '#FFD700';
             ctx.lineWidth = 2;
@@ -303,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         });
 
-        // Verificação do Fim da Tacada
+        // Fim da Tacada
         if (isShotInProgress) {
             const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
             if (totalSpeed < 0.03) {
