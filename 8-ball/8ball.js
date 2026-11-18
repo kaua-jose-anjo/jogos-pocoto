@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (FÍSICA DE 6 TABELAS RETANGULARES INDEPENDENTES)
+   POCOTO GAMES - 8-BALL (LOCAL + IA + MULTIPLAYER ONLINE P2P)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -14,6 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const powerBarFill = document.getElementById('power-bar-fill');
     const powerPercentage = document.getElementById('power-percentage');
 
+    // Elementos Multiplayer
+    const btnCreateRoom = document.getElementById('btn-create-room');
+    const btnJoinRoom = document.getElementById('btn-join-room');
+    const roomCodeInput = document.getElementById('room-code-input');
+    const onlineStatusEl = document.getElementById('online-status');
+
     const { Engine, World, Bodies, Body, Vector, Events } = Matter;
 
     const engine = Engine.create();
@@ -21,12 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
     engine.gravity.x = 0;
 
     const BALL_RADIUS = 10;
-    const COLOR_P1 = '#e53935'; // Vermelho (Jogador 1)
-    const COLOR_P2 = '#1e88e5'; // Azul (Jogador 2 / IA)
+    const COLOR_P1 = '#e53935'; // Vermelho
+    const COLOR_P2 = '#1e88e5'; // Azul
 
     let vsAI = false;
     let isAITurn = false;
     let isFirstShot = true;
+
+    // Variáveis Multiplayer Online
+    let isOnline = false;
+    let myPlayerNumber = 1; // 1 = Host (Vermelho), 2 = Guest (Azul)
+    let peer = null;
+    let conn = null;
 
     let currentPlayer = 1;
     let scoreP1 = 0;
@@ -48,7 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let whiteBallBody = null;
     let ballBodies = [];
 
-    // Posições das 6 Caçapas
     const POCKET_RADIUS = 20;
     const pockets = [
         { x: 25, y: 25 },    
@@ -59,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { x: 775, y: 375 }   
     ];
 
-    // Vértices Apenas para Renderização Visual das Quinas Chanfradas (Verde Claro)
     const wallVisualDefs = [
         [{ x: 50, y: 10 }, { x: 375, y: 10 }, { x: 365, y: 30 }, { x: 62, y: 30 }],
         [{ x: 425, y: 10 }, { x: 750, y: 10 }, { x: 738, y: 30 }, { x: 435, y: 30 }],
@@ -69,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         [{ x: 770, y: 62 }, { x: 790, y: 50 }, { x: 790, y: 350 }, { x: 770, y: 338 }]
     ];
 
-    // Registra o Primeiro Toque da Branca na Tacada
     Events.on(engine, 'collisionStart', (event) => {
         if (!isShotInProgress || firstBallHit !== null) return;
 
@@ -87,7 +96,153 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function initGame() {
+    /* =========================================================
+       SISTEMA DE REDE MULTIPLAYER (PEERJS)
+       ========================================================= */
+    function setupConnection(connection) {
+        conn = connection;
+        isOnline = true;
+        vsAI = false;
+
+        conn.on('open', () => {
+            if (myPlayerNumber === 1) {
+                onlineStatusEl.innerHTML = `✅ Jogador 2 conectado! Você é o <span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>.`;
+                initGame(true);
+            } else {
+                onlineStatusEl.innerHTML = `✅ Conectado à sala! Você é o <span style="color:${COLOR_P2}">Jogador 2 (Azul)</span>.`;
+            }
+        });
+
+        conn.on('data', (data) => {
+            if (data.type === 'INIT_BOARD') {
+                loadBoardState(data.balls);
+                currentPlayer = 1;
+                isFirstShot = true;
+                scoreP1 = 0;
+                scoreP2 = 0;
+                setBallInHand(false);
+            } else if (data.type === 'SHOT') {
+                firstBallHit = null;
+                pottedThisTurn = [];
+                cueBallPotted = false;
+
+                Body.setPosition(whiteBallBody, data.whitePos);
+                Body.applyForce(whiteBallBody, whiteBallBody.position, data.force);
+                isShotInProgress = true;
+            } else if (data.type === 'BALL_IN_HAND_MOVE') {
+                Body.setPosition(whiteBallBody, data.pos);
+            } else if (data.type === 'BALL_IN_HAND_PLACE') {
+                Body.setPosition(whiteBallBody, data.pos);
+                setBallInHand(false);
+            } else if (data.type === 'SYNC_END_TURN') {
+                syncFinalState(data);
+            }
+        });
+
+        conn.on('close', () => {
+            onlineStatusEl.textContent = '❌ O oponente desconectou da sala.';
+            isOnline = false;
+            conn = null;
+        });
+    }
+
+    btnCreateRoom.addEventListener('click', () => {
+        const randomCode = 'pocoto-' + Math.floor(1000 + Math.random() * 9000);
+        onlineStatusEl.textContent = '⏳ Gerando código da sala...';
+        btnCreateRoom.disabled = true;
+
+        if (peer) peer.destroy();
+        peer = new Peer(randomCode);
+        myPlayerNumber = 1;
+
+        peer.on('open', (id) => {
+            roomCodeInput.value = id;
+            btnCreateRoom.disabled = false;
+            onlineStatusEl.innerHTML = `
+                📡 Sala pronta! Código: <strong style="color:#1E4620; font-size:1.05rem;">${id}</strong> 
+                <button id="btn-copy-code" style="margin-left:8px; padding:3px 8px; border-radius:6px; border:1px solid #8B5A2B; background:#FFF; cursor:pointer; font-weight:700;">📋 Copiar</button>
+            `;
+
+            document.getElementById('btn-copy-code').addEventListener('click', () => {
+                navigator.clipboard.writeText(id);
+                document.getElementById('btn-copy-code').textContent = '✅ Copiado!';
+            });
+        });
+
+        peer.on('error', (err) => {
+            btnCreateRoom.disabled = false;
+            onlineStatusEl.innerHTML = `⚠️ Erro ao gerar sala (${err.type}). Tente novamente.`;
+        });
+
+        peer.on('connection', (connection) => {
+            setupConnection(connection);
+        });
+    });
+
+    btnJoinRoom.addEventListener('click', () => {
+        const targetCode = roomCodeInput.value.trim();
+        if (!targetCode) {
+            alert('Digite o código da sala para entrar!');
+            return;
+        }
+
+        onlineStatusEl.textContent = '⏳ Conectando à sala...';
+        btnJoinRoom.disabled = true;
+
+        if (peer) peer.destroy();
+        peer = new Peer();
+        myPlayerNumber = 2;
+
+        peer.on('open', () => {
+            const connection = peer.connect(targetCode);
+            btnJoinRoom.disabled = false;
+            setupConnection(connection);
+        });
+
+        peer.on('error', (err) => {
+            btnJoinRoom.disabled = false;
+            onlineStatusEl.innerHTML = `⚠️ Não foi possível entrar (${err.type}). Verifique o código.`;
+        });
+    });
+
+    function sendOnlineData(payload) {
+        if (isOnline && conn && conn.open) {
+            conn.send(payload);
+        }
+    }
+
+    function canIControlNow() {
+        if (isAITurn) return false;
+        if (isOnline && currentPlayer !== myPlayerNumber) return false;
+        return true;
+    }
+
+    /* =========================================================
+       INICIALIZAÇÃO E SINCRONIZAÇÃO DA MESA
+       ========================================================= */
+    function setupWalls() {
+        const wallPhysics = { isStatic: true, restitution: 0.98, friction: 0.0 };
+
+        const tableWalls = [
+            Bodies.rectangle(212.5, 20, 312.5, 20, wallPhysics),
+            Bodies.rectangle(587.5, 20, 312.5, 20, wallPhysics),
+            Bodies.rectangle(212.5, 380, 312.5, 20, wallPhysics),
+            Bodies.rectangle(587.5, 380, 312.5, 20, wallPhysics),
+            Bodies.rectangle(20, 200, 20, 276, wallPhysics),
+            Bodies.rectangle(780, 200, 20, 276, wallPhysics)
+        ];
+        World.add(engine.world, tableWalls);
+
+        const outerWalls = [
+            Bodies.rectangle(400, -10, 840, 20, wallPhysics),
+            Bodies.rectangle(400, 410, 840, 20, wallPhysics),
+            Bodies.rectangle(-10, 200, 20, 440, wallPhysics),
+            Bodies.rectangle(810, 200, 20, 440, wallPhysics)
+        ];
+        World.add(engine.world, outerWalls);
+    }
+
+    function initGame(broadcast = false) {
         World.clear(engine.world);
 
         currentPlayer = 1;
@@ -104,32 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePowerBarUI();
         ballBodies = [];
 
-        const wallPhysics = { isStatic: true, restitution: 0.98, friction: 0.0 };
+        setupWalls();
 
-        // --- 6 PAREDES RETANGULARES COM FÍSICA PRÓPRIA (ZONA VERDE CLARO) ---
-        const tableWalls = [
-            // Topo Esquerda e Direita
-            Bodies.rectangle(212.5, 20, 312.5, 20, wallPhysics),
-            Bodies.rectangle(587.5, 20, 312.5, 20, wallPhysics),
-            // Inferior Esquerda e Direita
-            Bodies.rectangle(212.5, 380, 312.5, 20, wallPhysics),
-            Bodies.rectangle(587.5, 380, 312.5, 20, wallPhysics),
-            // Lateral Esquerda e Direita
-            Bodies.rectangle(20, 200, 20, 276, wallPhysics),
-            Bodies.rectangle(780, 200, 20, 276, wallPhysics)
-        ];
-        World.add(engine.world, tableWalls);
-
-        // Parede Externa Invisível de Segurança
-        const outerWalls = [
-            Bodies.rectangle(400, -10, 840, 20, wallPhysics),
-            Bodies.rectangle(400, 410, 840, 20, wallPhysics),
-            Bodies.rectangle(-10, 200, 20, 440, wallPhysics),
-            Bodies.rectangle(810, 200, 20, 440, wallPhysics)
-        ];
-        World.add(engine.world, outerWalls);
-
-        // Física das Bolas
         const poolBallPhysics = {
             restitution: 0.99,   
             friction: 0.0,       
@@ -137,14 +268,13 @@ document.addEventListener('DOMContentLoaded', () => {
             density: 0.04        
         };
 
-        // Bola Branca
         whiteBallBody = Bodies.circle(200, 200, BALL_RADIUS, poolBallPhysics);
         whiteBallBody.isWhite = true;
+        whiteBallBody.ballId = 0;
         whiteBallBody.color = '#ffffff';
         World.add(engine.world, whiteBallBody);
         ballBodies.push(whiteBallBody);
 
-        // 16 Bolas Alvo
         const targetColors = [
             COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2, COLOR_P2,
             COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1, COLOR_P1
@@ -169,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const ball = Bodies.circle(bx, by, BALL_RADIUS, poolBallPhysics);
                     ball.isWhite = false;
+                    ball.ballId = index + 1;
                     ball.color = targetColors[index];
 
                     World.add(engine.world, ball);
@@ -179,6 +310,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         setBallInHand(false);
+
+        if (broadcast && isOnline && myPlayerNumber === 1) {
+            const serializedBalls = ballBodies.map(b => ({
+                ballId: b.ballId,
+                isWhite: b.isWhite,
+                color: b.color,
+                x: b.position.x,
+                y: b.position.y
+            }));
+            sendOnlineData({ type: 'INIT_BOARD', balls: serializedBalls });
+        }
+    }
+
+    function loadBoardState(serializedBalls) {
+        World.clear(engine.world);
+        ballBodies = [];
+        setupWalls();
+
+        const poolBallPhysics = {
+            restitution: 0.99,   
+            friction: 0.0,       
+            frictionAir: 0.0035, 
+            density: 0.04        
+        };
+
+        serializedBalls.forEach(item => {
+            const ball = Bodies.circle(item.x, item.y, BALL_RADIUS, poolBallPhysics);
+            ball.isWhite = item.isWhite;
+            ball.ballId = item.ballId;
+            ball.color = item.color;
+
+            if (item.isWhite) whiteBallBody = ball;
+            World.add(engine.world, ball);
+            ballBodies.push(ball);
+        });
+    }
+
+    function syncFinalState(data) {
+        loadBoardState(data.balls);
+        currentPlayer = data.currentPlayer;
+        scoreP1 = data.scoreP1;
+        scoreP2 = data.scoreP2;
+        isFirstShot = data.isFirstShot;
+        setBallInHand(data.ballInHand);
+        updateHUD(data.foulReason);
     }
 
     function setBallInHand(active) {
@@ -201,6 +377,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>` 
             : `<span style="color:${COLOR_P2}">${p2Label}</span>`;
 
+        if (isOnline) {
+            statusText += currentPlayer === myPlayerNumber ? " <strong>(Sua Vez)</strong>" : " <em>(Aguardando Oponente...)</em>";
+        }
+
         if (isFirstShot) {
             statusText += ` <strong style="color: #FFD700;">💥 ESTOURADA INICIAL</strong>`;
         } else if (foulMessage) {
@@ -221,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function playAITurn() {
-        if (!vsAI || currentPlayer !== 2 || isShotInProgress) return;
+        if (!vsAI || isOnline || currentPlayer !== 2 || isShotInProgress) return;
 
         isAITurn = true;
 
@@ -249,9 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!targetBall) {
                 const targetCandidates = ballBodies.filter(b => !b.isWhite);
-                if (targetCandidates.length > 0) {
-                    targetBall = targetCandidates[0];
-                }
+                if (targetCandidates.length > 0) targetBall = targetCandidates[0];
             }
 
             let aimAngle = 0;
@@ -283,28 +461,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     canvas.addEventListener('mousemove', (e) => {
-        if (isAITurn) return;
+        if (!canIControlNow()) return;
+
         const rect = canvas.getBoundingClientRect();
         mousePos.x = e.clientX - rect.left;
         mousePos.y = e.clientY - rect.top;
 
-        if (ballInHand && whiteBallBody && currentPlayer === 1) {
-            Body.setPosition(whiteBallBody, {
+        if (ballInHand && whiteBallBody) {
+            const newPos = {
                 x: Math.max(35 + BALL_RADIUS, Math.min(765 - BALL_RADIUS, mousePos.x)),
                 y: Math.max(35 + BALL_RADIUS, Math.min(365 - BALL_RADIUS, mousePos.y))
-            });
+            };
+            Body.setPosition(whiteBallBody, newPos);
             Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
+
+            if (isOnline) {
+                sendOnlineData({ type: 'BALL_IN_HAND_MOVE', pos: newPos });
+            }
         }
     });
 
     canvas.addEventListener('mousedown', () => {
-        if (ballInHand && !isAITurn) setBallInHand(false);
+        if (ballInHand && canIControlNow()) {
+            setBallInHand(false);
+            if (isOnline) {
+                sendOnlineData({
+                    type: 'BALL_IN_HAND_PLACE',
+                    pos: { x: whiteBallBody.position.x, y: whiteBallBody.position.y }
+                });
+            }
+        }
     });
 
     window.addEventListener('keydown', (e) => {
         if (e.code === 'Space') {
             e.preventDefault();
-            if (isAITurn) return;
+            if (!canIControlNow()) return;
 
             const speed = Vector.magnitude(whiteBallBody.velocity);
 
@@ -322,15 +514,24 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('keyup', (e) => {
         if (e.code === 'Space' && isChargingPower) {
             e.preventDefault();
-            if (isAITurn) return;
+            if (!canIControlNow()) return;
 
             const angle = Math.atan2(mousePos.y - whiteBallBody.position.y, mousePos.x - whiteBallBody.position.x);
             const forceMagnitude = (power / 100) * 0.30; 
-
-            Body.applyForce(whiteBallBody, whiteBallBody.position, {
+            const forceVector = {
                 x: Math.cos(angle) * forceMagnitude,
                 y: Math.sin(angle) * forceMagnitude
-            });
+            };
+
+            if (isOnline) {
+                sendOnlineData({
+                    type: 'SHOT',
+                    whitePos: { x: whiteBallBody.position.x, y: whiteBallBody.position.y },
+                    force: forceVector
+                });
+            }
+
+            Body.applyForce(whiteBallBody, whiteBallBody.position, forceVector);
 
             isChargingPower = false;
             isShotInProgress = true;
@@ -339,7 +540,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    btnRestart.addEventListener('click', initGame);
+    btnRestart.addEventListener('click', () => {
+        if (isOnline && myPlayerNumber !== 1) {
+            alert('Apenas o criador da sala (Jogador 1) pode reiniciar a partida online.');
+            return;
+        }
+        initGame(true);
+    });
 
     const btnToggleAI = document.createElement('button');
     btnToggleAI.id = 'btn-toggle-ai';
@@ -347,9 +554,13 @@ document.addEventListener('DOMContentLoaded', () => {
     btnToggleAI.style.cssText = 'margin-left: 10px; padding: 0.85rem 1.5rem; font-weight: 700; border: 2px solid #8B5A2B; border-radius: 10px; background: #1E4620; color: #FFF; cursor: pointer;';
 
     btnToggleAI.addEventListener('click', () => {
+        if (isOnline) {
+            alert('Desconecte do modo online para jogar contra a IA.');
+            return;
+        }
         vsAI = !vsAI;
         btnToggleAI.textContent = vsAI ? 'Modo: Contra IA (PvE)' : 'Modo: 2 Jogadores (PvP)';
-        initGame();
+        initGame(false);
     });
 
     const controlsPanel = document.querySelector('.controls-panel');
@@ -360,7 +571,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
         Engine.update(engine, 1000 / 60);
 
-        // CORTE AUTOMÁTICO DE VELOCIDADE (STOP THRESHOLD)
         const STOP_THRESHOLD = 0.15;
         ballBodies.forEach(b => {
             const currentSpeed = Vector.magnitude(b.velocity);
@@ -377,11 +587,9 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePowerBarUI();
         }
 
-        // 1. PANO VERDE DA MESA
         ctx.fillStyle = '#1e5622';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. CAÇAPAS E ENCAÇAPAMENTOS
         ctx.fillStyle = '#0a0a0a';
         pockets.forEach(p => {
             ctx.beginPath();
@@ -413,7 +621,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 3. DESENHO VISUAL DAS TABELAS VERDE CLARO E PONTOS DE QUINA
         ctx.fillStyle = '#388e3c';
         ctx.strokeStyle = '#2e7d32';
         ctx.lineWidth = 2;
@@ -434,7 +641,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.fillStyle = '#388e3c';
         });
 
-        // 4. GUIA DE MIRA E BOLA NA MÃO
         if (ballInHand && whiteBallBody) {
             ctx.strokeStyle = '#FFD700';
             ctx.lineWidth = 2;
@@ -445,7 +651,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.setLineDash([]);
         }
 
-        if (!isShotInProgress && !ballInHand && !isAITurn) {
+        if (!isShotInProgress && !ballInHand && canIControlNow()) {
             const playerColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
             ctx.strokeStyle = playerColor;
             ctx.lineWidth = 2;
@@ -455,7 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         }
 
-        // 5. DESENHAR BOLAS
         ballBodies.forEach(b => {
             ctx.beginPath();
             ctx.arc(b.position.x, b.position.y, BALL_RADIUS, 0, Math.PI * 2);
@@ -466,52 +671,71 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.stroke();
         });
 
-        // 6. PROCESSAR FIM DA TACADA E AVALIAR INFRAÇÕES
         if (isShotInProgress) {
             const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
             if (totalSpeed < 0.02) {
                 isShotInProgress = false;
 
-                const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
-                const opponentColor = currentPlayer === 1 ? COLOR_P2 : COLOR_P1;
+                if (!isOnline || currentPlayer === myPlayerNumber) {
+                    const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
+                    const opponentColor = currentPlayer === 1 ? COLOR_P2 : COLOR_P1;
 
-                let isFoul = false;
-                let foulReason = "";
+                    let isFoul = false;
+                    let foulReason = "";
 
-                if (cueBallPotted) {
-                    isFoul = true;
-                    foulReason = "Encaçapou a bola branca!";
-                } else if (!isFirstShot) {
-                    if (firstBallHit === null) {
+                    if (cueBallPotted) {
                         isFoul = true;
-                        foulReason = "Não tocou em nenhuma bola!";
-                    } else if (firstBallHit.color === opponentColor) {
-                        isFoul = true;
-                        foulReason = "Primeiro toque foi na bola do adversário!";
+                        foulReason = "Encaçapou a bola branca!";
+                    } else if (!isFirstShot) {
+                        if (firstBallHit === null) {
+                            isFoul = true;
+                            foulReason = "Não tocou em nenhuma bola!";
+                        } else if (firstBallHit.color === opponentColor) {
+                            isFoul = true;
+                            foulReason = "Primeiro toque foi na bola do adversário!";
+                        }
                     }
-                }
 
-                if (isFirstShot) {
-                    isFirstShot = false;
-                }
+                    if (isFirstShot) {
+                        isFirstShot = false;
+                    }
 
-                if (isFoul) {
-                    currentPlayer = currentPlayer === 1 ? 2 : 1;
-                    setBallInHand(true);
-                    updateHUD(foulReason);
-                } else if (pottedThisTurn.includes(myColor)) {
-                    updateHUD();
-                } else {
-                    currentPlayer = currentPlayer === 1 ? 2 : 1;
-                    updateHUD();
-                }
+                    if (isFoul) {
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                        setBallInHand(true);
+                        updateHUD(foulReason);
+                    } else if (pottedThisTurn.includes(myColor)) {
+                        updateHUD();
+                    } else {
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                        updateHUD();
+                    }
 
-                firstBallHit = null;
-                pottedThisTurn = [];
-                cueBallPotted = false;
+                    firstBallHit = null;
+                    pottedThisTurn = [];
+                    cueBallPotted = false;
 
-                if (vsAI && currentPlayer === 2) {
-                    playAITurn();
+                    if (isOnline) {
+                        const serializedBalls = ballBodies.map(b => ({
+                            ballId: b.ballId,
+                            isWhite: b.isWhite,
+                            color: b.color,
+                            x: b.position.x,
+                            y: b.position.y
+                        }));
+                        sendOnlineData({
+                            type: 'SYNC_END_TURN',
+                            balls: serializedBalls,
+                            currentPlayer,
+                            scoreP1,
+                            scoreP2,
+                            isFirstShot,
+                            ballInHand,
+                            foulReason
+                        });
+                    } else if (vsAI && currentPlayer === 2) {
+                        playAITurn();
+                    }
                 }
             }
         }
@@ -519,6 +743,6 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(gameLoop);
     }
 
-    initGame();
+    initGame(false);
     gameLoop();
 });
