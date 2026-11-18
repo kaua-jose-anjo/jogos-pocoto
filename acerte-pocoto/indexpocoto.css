@@ -2,6 +2,27 @@
    POCOTO GAMES - ACERTE O POCOTÓ (acerte-pocoto/style_pocoto.css)
    ========================================================= */
 
+/* Limpeza e Formatação de Links do Cabeçalho */
+.main-header a, 
+.main-header a:visited, 
+.main-header a:hover, 
+.main-header a:active {
+    text-decoration: none !important;
+}
+
+.logo {
+    color: #FFFFFF !important;
+}
+
+.main-nav a {
+    color: #F9F5F0 !important;
+}
+
+.main-nav a.active {
+    color: #FFD700 !important;
+}
+
+/* Container Principal */
 .game-container {
     max-width: 760px;
     margin: 2rem auto;
@@ -34,6 +55,7 @@
     margin-bottom: 1.5rem;
 }
 
+/* HUD de Pontuação, Tempo e Recorde */
 .game-hud {
     display: flex;
     justify-content: space-around;
@@ -56,6 +78,7 @@
     font-size: 1.25rem;
 }
 
+/* Grelha 3x3 de Tocas */
 .hole-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -71,7 +94,7 @@
 
 .hole {
     width: 100%;
-    height: 125px;
+    height: 140px;
     background: radial-gradient(circle, #3D2B1F 20%, #1A120B 100%);
     border: 6px solid #8B5A2B;
     border-radius: 50%;
@@ -95,6 +118,7 @@
     pointer-events: none;
 }
 
+/* Cavalo e Bomba Ampliados */
 .pocoto {
     width: 100%;
     height: 100%;
@@ -104,28 +128,42 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 5.2rem;
+    line-height: 1;
     z-index: 2;
     transition: top 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.25);
     user-select: none;
 }
 
 .hole.up .pocoto {
-    top: 5px;
+    top: -4px;
 }
 
-.horse-icon {
-    width: 62px;
-    height: 62px;
-    fill: #8B5A2B;
-    filter: drop-shadow(0px 6px 4px rgba(0,0,0,0.4));
-    transition: transform 0.1s ease;
+.hole.hit .pocoto {
+    transform: scale(0.8) rotate(-15deg);
+    filter: brightness(1.2);
 }
 
-.hole.hit .pocoto .horse-icon {
-    transform: scale(0.75) rotate(-20deg);
-    fill: #D32F2F;
+/* Efeito de Explosão da Bomba */
+.hole.exploded .pocoto {
+    transform: scale(1.35);
+    filter: drop-shadow(0 0 12px #ff3d00);
 }
 
+@keyframes boardShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px) rotate(-1deg); }
+    40% { transform: translateX(8px) rotate(1deg); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+}
+
+.hole-grid.shake {
+    animation: boardShake 0.35s ease;
+    border-color: #d32f2f;
+}
+
+/* Botão Iniciar */
 #btn-start {
     padding: 0.95rem 2.8rem;
     font-size: 1.15rem;
@@ -148,23 +186,4 @@
     background: #B0A090;
     cursor: not-allowed;
     transform: none;
-}
-/* Limpeza de Estilos de Links do Cabeçalho */
-.main-header a, 
-.main-header a:visited, 
-.main-header a:hover, 
-.main-header a:active {
-    text-decoration: none !important;
-}
-
-.logo {
-    color: #FFFFFF !important;
-}
-
-.main-nav a {
-    color: #F9F5F0 !important;
-}
-
-.main-nav a.active {
-    color: #FFD700 !important;
 }

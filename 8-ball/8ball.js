@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 6. PROCESSAR FIM DA TACADA E AVALIAR INFRAÇÕES
         if (isShotInProgress) {
             const totalSpeed = ballBodies.reduce((acc, b) => acc + Vector.magnitude(b.velocity), 0);
-            if (totalSpeed < 1) {
+            if (totalSpeed < 0.02) {
                 isShotInProgress = false;
 
                 const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
