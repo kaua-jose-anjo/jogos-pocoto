@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (LOCAL + IA + MULTIPLAYER ONLINE P2P)
+   POCOTO GAMES - 8-BALL (CAÇAPAS E CAPTURA CORRIGIDAS)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -20,11 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomCodeInput = document.getElementById('room-code-input');
     const onlineStatusEl = document.getElementById('online-status');
 
-    const { Engine, World, Bodies, Body, Vector, Events } = Matter;
+    const { Engine, World, Bodies, Body, Vector, Events, Vertices } = Matter;
 
     const engine = Engine.create();
     engine.gravity.y = 0;
     engine.gravity.x = 0;
+
+    engine.positionIterations = 10;
+    engine.velocityIterations = 10;
 
     const BALL_RADIUS = 10;
     const COLOR_P1 = '#e53935'; // Vermelho
@@ -36,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Variáveis Multiplayer Online
     let isOnline = false;
-    let myPlayerNumber = 1; // 1 = Host (Vermelho), 2 = Guest (Azul)
+    let myPlayerNumber = 1;
     let peer = null;
     let conn = null;
 
@@ -52,6 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let mousePos = { x: 0, y: 0 };
     let ballInHand = false;
     let isShotInProgress = false;
+    let lastFoulMessage = "";
 
     let firstBallHit = null;      
     let pottedThisTurn = [];      
@@ -60,23 +64,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let whiteBallBody = null;
     let ballBodies = [];
 
-    const POCKET_RADIUS = 20;
+    // Caçapas com posicionamento alinhado à abertura das tabelas e raio de captura ampliado
+    const POCKET_RADIUS = 22;
+    const CAPTURE_RADIUS = 26; // Área efetiva que engole a bola ao cruzar a boca
+    const SUCTION_RADIUS = 34; // Área de borda que puxa a bola para dentro ao cair na quina
+
     const pockets = [
-        { x: 25, y: 25 },    
-        { x: 400, y: 18 },   
-        { x: 775, y: 25 },   
-        { x: 25, y: 375 },   
-        { x: 400, y: 382 },  
-        { x: 775, y: 375 }   
+        { x: 28, y: 28 },    // Canto Superior Esquerdo
+        { x: 400, y: 20 },   // Meio Superior
+        { x: 772, y: 28 },   // Canto Superior Direito
+        { x: 28, y: 372 },   // Canto Inferior Esquerdo
+        { x: 400, y: 380 },  // Meio Inferior
+        { x: 772, y: 372 }   // Canto Inferior Direito
     ];
 
-    const wallVisualDefs = [
-        [{ x: 50, y: 10 }, { x: 375, y: 10 }, { x: 365, y: 30 }, { x: 62, y: 30 }],
-        [{ x: 425, y: 10 }, { x: 750, y: 10 }, { x: 738, y: 30 }, { x: 435, y: 30 }],
-        [{ x: 62, y: 370 }, { x: 365, y: 370 }, { x: 375, y: 390 }, { x: 50, y: 390 }],
-        [{ x: 435, y: 370 }, { x: 738, y: 370 }, { x: 750, y: 390 }, { x: 425, y: 390 }],
-        [{ x: 10, y: 50 }, { x: 30, y: 62 }, { x: 30, y: 338 }, { x: 10, y: 350 }],
-        [{ x: 770, y: 62 }, { x: 790, y: 50 }, { x: 790, y: 350 }, { x: 770, y: 338 }]
+    // Tabelas verde claro com abertura mais generosa nas bocas das 6 caçapas
+    const wallDefs = [
+        // Topo Esquerda
+        [{ x: 54, y: 8 }, { x: 372, y: 8 }, { x: 362, y: 30 }, { x: 66, y: 30 }],
+        // Topo Direita
+        [{ x: 428, y: 8 }, { x: 746, y: 8 }, { x: 734, y: 30 }, { x: 438, y: 30 }],
+        // Inferior Esquerda
+        [{ x: 66, y: 370 }, { x: 362, y: 370 }, { x: 372, y: 392 }, { x: 54, y: 392 }],
+        // Inferior Direita
+        [{ x: 438, y: 370 }, { x: 734, y: 370 }, { x: 746, y: 392 }, { x: 428, y: 392 }],
+        // Lateral Esquerda
+        [{ x: 8, y: 54 }, { x: 30, y: 66 }, { x: 30, y: 334 }, { x: 8, y: 346 }],
+        // Lateral Direita
+        [{ x: 770, y: 66 }, { x: 792, y: 54 }, { x: 792, y: 346 }, { x: 770, y: 334 }]
     ];
 
     Events.on(engine, 'collisionStart', (event) => {
@@ -120,19 +135,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 isFirstShot = true;
                 scoreP1 = 0;
                 scoreP2 = 0;
+                lastFoulMessage = "";
                 setBallInHand(false);
             } else if (data.type === 'SHOT') {
+                lastFoulMessage = "";
                 firstBallHit = null;
                 pottedThisTurn = [];
                 cueBallPotted = false;
 
                 Body.setPosition(whiteBallBody, data.whitePos);
+                Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
                 Body.applyForce(whiteBallBody, whiteBallBody.position, data.force);
                 isShotInProgress = true;
             } else if (data.type === 'BALL_IN_HAND_MOVE') {
-                Body.setPosition(whiteBallBody, data.pos);
+                if (whiteBallBody) {
+                    Body.setPosition(whiteBallBody, data.pos);
+                    Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
+                }
             } else if (data.type === 'BALL_IN_HAND_PLACE') {
-                Body.setPosition(whiteBallBody, data.pos);
+                if (whiteBallBody) {
+                    Body.setPosition(whiteBallBody, data.pos);
+                    Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
+                }
+                lastFoulMessage = "";
                 setBallInHand(false);
             } else if (data.type === 'SYNC_END_TURN') {
                 syncFinalState(data);
@@ -218,26 +243,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /* =========================================================
-       INICIALIZAÇÃO E SINCRONIZAÇÃO DA MESA
+       CONSTRUÇÃO FÍSICA DAS TABELAS E RECUO EXTERNO
        ========================================================= */
     function setupWalls() {
-        const wallPhysics = { isStatic: true, restitution: 0.98, friction: 0.0 };
+        const wallPhysics = {
+            isStatic: true,
+            restitution: 0.96,
+            friction: 0.0,
+            frictionStatic: 0.0,
+            slop: 0.01
+        };
 
-        const tableWalls = [
-            Bodies.rectangle(212.5, 20, 312.5, 20, wallPhysics),
-            Bodies.rectangle(587.5, 20, 312.5, 20, wallPhysics),
-            Bodies.rectangle(212.5, 380, 312.5, 20, wallPhysics),
-            Bodies.rectangle(587.5, 380, 312.5, 20, wallPhysics),
-            Bodies.rectangle(20, 200, 20, 276, wallPhysics),
-            Bodies.rectangle(780, 200, 20, 276, wallPhysics)
-        ];
-        World.add(engine.world, tableWalls);
+        wallDefs.forEach(pts => {
+            const center = Vertices.centre(pts);
+            const cushionBody = Bodies.fromVertices(center.x, center.y, [pts], wallPhysics, true);
+            if (cushionBody) {
+                const currentCenter = Vertices.centre(cushionBody.vertices);
+                Body.translate(cushionBody, {
+                    x: center.x - currentCenter.x,
+                    y: center.y - currentCenter.y
+                });
+                World.add(engine.world, cushionBody);
+            }
+        });
 
+        // Paredes externas recuadas para que a bola entre livremente na caçapa sem bater no fundo
         const outerWalls = [
-            Bodies.rectangle(400, -10, 840, 20, wallPhysics),
-            Bodies.rectangle(400, 410, 840, 20, wallPhysics),
-            Bodies.rectangle(-10, 200, 20, 440, wallPhysics),
-            Bodies.rectangle(810, 200, 20, 440, wallPhysics)
+            Bodies.rectangle(400, -30, 900, 30, wallPhysics),
+            Bodies.rectangle(400, 430, 900, 30, wallPhysics),
+            Bodies.rectangle(-30, 200, 30, 500, wallPhysics),
+            Bodies.rectangle(830, 200, 30, 500, wallPhysics)
         ];
         World.add(engine.world, outerWalls);
     }
@@ -256,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         firstBallHit = null;
         pottedThisTurn = [];
         cueBallPotted = false;
+        lastFoulMessage = "";
         updatePowerBarUI();
         ballBodies = [];
 
@@ -263,9 +299,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const poolBallPhysics = {
             restitution: 0.99,   
-            friction: 0.0,       
+            friction: 0.0,
+            frictionStatic: 0.0,
             frictionAir: 0.0035, 
-            density: 0.04        
+            density: 0.04,
+            slop: 0.01
         };
 
         whiteBallBody = Bodies.circle(200, 200, BALL_RADIUS, poolBallPhysics);
@@ -330,9 +368,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const poolBallPhysics = {
             restitution: 0.99,   
-            friction: 0.0,       
+            friction: 0.0,
+            frictionStatic: 0.0,
             frictionAir: 0.0035, 
-            density: 0.04        
+            density: 0.04,
+            slop: 0.01
         };
 
         serializedBalls.forEach(item => {
@@ -348,16 +388,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function syncFinalState(data) {
+        isShotInProgress = false;
+        isChargingPower = false;
+        
         loadBoardState(data.balls);
         currentPlayer = data.currentPlayer;
         scoreP1 = data.scoreP1;
         scoreP2 = data.scoreP2;
         isFirstShot = data.isFirstShot;
-        setBallInHand(data.ballInHand);
-        updateHUD(data.foulReason);
+        lastFoulMessage = data.foulReason || "";
+        
+        setBallInHand(data.ballInHand, lastFoulMessage);
     }
 
-    function setBallInHand(active) {
+    function setBallInHand(active, foulMessage = "") {
         ballInHand = active;
         if (whiteBallBody) {
             whiteBallBody.isSensor = active;
@@ -365,10 +409,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
             }
         }
-        updateHUD();
+        updateHUD(foulMessage);
     }
 
-    function updateHUD(foulMessage = "") {
+    function updateHUD(foulMessage = lastFoulMessage) {
         const redBalls = ballBodies.filter(b => b.color === COLOR_P1).length;
         const blueBalls = ballBodies.filter(b => b.color === COLOR_P2).length;
 
@@ -378,15 +422,21 @@ document.addEventListener('DOMContentLoaded', () => {
             : `<span style="color:${COLOR_P2}">${p2Label}</span>`;
 
         if (isOnline) {
-            statusText += currentPlayer === myPlayerNumber ? " <strong>(Sua Vez)</strong>" : " <em>(Aguardando Oponente...)</em>";
+            statusText += currentPlayer === myPlayerNumber ? " <strong>(Sua Vez)</strong>" : " <em>(Vez do Oponente)</em>";
         }
 
         if (isFirstShot) {
             statusText += ` <strong style="color: #FFD700;">💥 ESTOURADA INICIAL</strong>`;
         } else if (foulMessage) {
             statusText += ` <strong style="color: #ff5252;">⚠️ INFRAÇÃO: ${foulMessage}</strong>`;
-        } else if (ballInHand) {
-            statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO!</strong>`;
+        }
+
+        if (ballInHand) {
+            if (isOnline && currentPlayer !== myPlayerNumber) {
+                statusText += ` <strong style="color: #FFD700;">🖐️ Oponente posicionando a bola...</strong>`;
+            } else {
+                statusText += ` <strong style="color: #FFD700;">🖐️ BOLA NA MÃO! (Clique para posicionar)</strong>`;
+            }
         }
 
         playerNameEl.innerHTML = statusText;
@@ -407,6 +457,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (ballInHand) {
             Body.setPosition(whiteBallBody, { x: 200, y: 200 + (Math.random() * 60 - 30) });
+            lastFoulMessage = "";
             setBallInHand(false);
         }
 
@@ -449,6 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
             firstBallHit = null;
             pottedThisTurn = [];
             cueBallPotted = false;
+            lastFoulMessage = "";
 
             Body.applyForce(whiteBallBody, whiteBallBody.position, {
                 x: Math.cos(aimAngle) * forceMagnitude,
@@ -469,8 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (ballInHand && whiteBallBody) {
             const newPos = {
-                x: Math.max(35 + BALL_RADIUS, Math.min(765 - BALL_RADIUS, mousePos.x)),
-                y: Math.max(35 + BALL_RADIUS, Math.min(365 - BALL_RADIUS, mousePos.y))
+                x: Math.max(45 + BALL_RADIUS, Math.min(755 - BALL_RADIUS, mousePos.x)),
+                y: Math.max(45 + BALL_RADIUS, Math.min(355 - BALL_RADIUS, mousePos.y))
             };
             Body.setPosition(whiteBallBody, newPos);
             Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
@@ -483,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('mousedown', () => {
         if (ballInHand && canIControlNow()) {
+            lastFoulMessage = "";
             setBallInHand(false);
             if (isOnline) {
                 sendOnlineData({
@@ -507,6 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstBallHit = null;
                 pottedThisTurn = [];
                 cueBallPotted = false;
+                lastFoulMessage = "";
             }
         }
     });
@@ -590,6 +644,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#1e5622';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+        // Desenho e Lógica de Captura das Caçapas
         ctx.fillStyle = '#0a0a0a';
         pockets.forEach(p => {
             ctx.beginPath();
@@ -601,17 +656,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = ballBodies.length - 1; i >= 0; i--) {
                 const b = ballBodies[i];
-                const dist = Math.hypot(b.position.x - p.x, b.position.y - p.y);
+                if (b.isSensor) continue; // Ignora bola branca enquanto está na mão do jogador
 
-                if (dist < POCKET_RADIUS - 2) {
+                const dx = p.x - b.position.x;
+                const dy = p.y - b.position.y;
+                const dist = Math.hypot(dx, dy);
+
+                // 1. Efeito de gravidade da borda da caçapa (puxa bolas que entram na boca)
+                if (dist >= CAPTURE_RADIUS && dist < SUCTION_RADIUS) {
+                    const pullStrength = 0.0025;
+                    Body.applyForce(b, b.position, {
+                        x: (dx / dist) * pullStrength,
+                        y: (dy / dist) * pullStrength
+                    });
+                }
+
+                // 2. Captura garantida ao cruzar o raio da boca da caçapa
+                if (dist < CAPTURE_RADIUS) {
                     if (b.isWhite) {
                         cueBallPotted = true;
                         Body.setPosition(whiteBallBody, { x: 200, y: 200 });
                         Body.setVelocity(whiteBallBody, { x: 0, y: 0 });
                     } else {
                         pottedThisTurn.push(b.color);
-                        if (b.color === COLOR_P1) scoreP1 += 100;
-                        if (b.color === COLOR_P2) scoreP2 += 100;
+                        if (!isOnline || currentPlayer === myPlayerNumber) {
+                            if (b.color === COLOR_P1) scoreP1 += 100;
+                            if (b.color === COLOR_P2) scoreP2 += 100;
+                        }
 
                         World.remove(engine.world, b);
                         ballBodies.splice(i, 1);
@@ -621,11 +692,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Desenho das Tabelas Verde Claro
         ctx.fillStyle = '#388e3c';
         ctx.strokeStyle = '#2e7d32';
         ctx.lineWidth = 2;
 
-        wallVisualDefs.forEach(pts => {
+        wallDefs.forEach(pts => {
             ctx.beginPath();
             ctx.moveTo(pts[0].x, pts[0].y);
             for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
@@ -700,15 +772,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         isFirstShot = false;
                     }
 
+                    lastFoulMessage = foulReason;
+
                     if (isFoul) {
                         currentPlayer = currentPlayer === 1 ? 2 : 1;
-                        setBallInHand(true);
-                        updateHUD(foulReason);
+                        setBallInHand(true, foulReason);
                     } else if (pottedThisTurn.includes(myColor)) {
-                        updateHUD();
+                        updateHUD("");
                     } else {
                         currentPlayer = currentPlayer === 1 ? 2 : 1;
-                        updateHUD();
+                        updateHUD("");
                     }
 
                     firstBallHit = null;
