@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (TABELAS, CAÇAPAS E IA PROGRESSIVA)
+   POCOTO GAMES - 8-BALL (TABELAS, CAÇAPAS, ATRITO SUAVE E IA)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -269,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: center.x - currentCenter.x,
                     y: center.y - currentCenter.y
                 });
-                // Garante restituição nas partes internas caso Bodies.fromVertices subdivida o polígono
                 if (cushionBody.parts) {
                     cushionBody.parts.forEach(part => {
                         part.restitution = 0.98;
@@ -317,7 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restitution: 0.99,   
             friction: 0.0,
             frictionStatic: 0.0,
-            frictionAir: 0.0035, 
+            frictionAir: 0.0075, // Desliza leve na saída, sem parecer pedra
             density: 0.04,
             slop: 0.0
         };
@@ -386,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
             restitution: 0.99,   
             friction: 0.0,
             frictionStatic: 0.0,
-            frictionAir: 0.0035, 
+            frictionAir: 0.0075, // Desliza leve na saída, sem parecer pedra
             density: 0.04,
             slop: 0.0
         };
@@ -559,7 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const randomError = (Math.random() * 2 - 1) * maxErrorAngle;
             aimAngle += randomError;
 
-            const idealPower = bestShot ? Math.min(85, Math.max(40, (bestShot.distToPocket / 400) * 70 + 35)) : 60;
+            const idealPower = bestShot ? Math.min(88, Math.max(44, (bestShot.distToPocket / 380) * 72 + 38)) : 62;
             const powerNoise = (Math.random() * 2 - 1) * (1 - skill) * 30;
             const finalPower = Math.max(25, Math.min(95, idealPower + powerNoise));
             const forceMagnitude = (finalPower / 100) * 0.28;
@@ -638,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!canIControlNow()) return;
 
             const angle = Math.atan2(mousePos.y - whiteBallBody.position.y, mousePos.x - whiteBallBody.position.x);
-            const forceMagnitude = (power / 100) * 0.30; 
+            const forceMagnitude = (power / 100) * 0.50; 
             const forceVector = {
                 x: Math.cos(angle) * forceMagnitude,
                 y: Math.sin(angle) * forceMagnitude
@@ -692,12 +691,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
         Engine.update(engine, 1000 / 60);
 
+        // Desaceleração calibrada: livre em alta velocidade, freio suave no final
         const STOP_THRESHOLD = 0.08;
+        const FELT_DRAG = 0.007;
+
         ballBodies.forEach(b => {
             const currentSpeed = Vector.magnitude(b.velocity);
-            if (currentSpeed > 0 && currentSpeed < STOP_THRESHOLD) {
-                Body.setVelocity(b, { x: 0, y: 0 });
-                Body.setAngularVelocity(b, 0);
+            if (currentSpeed > 0) {
+                if (currentSpeed < STOP_THRESHOLD) {
+                    Body.setVelocity(b, { x: 0, y: 0 });
+                    Body.setAngularVelocity(b, 0);
+                } else {
+                    const newSpeed = Math.max(0, currentSpeed - FELT_DRAG);
+                    const scale = newSpeed / currentSpeed;
+                    Body.setVelocity(b, {
+                        x: b.velocity.x * scale,
+                        y: b.velocity.y * scale
+                    });
+                }
             }
         });
 
