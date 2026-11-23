@@ -1,8 +1,29 @@
 /* =========================================================
-   POCOTO GAMES - ACERTE O POCOTÓ (acerte-pocoto/style_pocoto.css)
+   POCOTO GAMES - ACERTE O POCOTÓ (acerte-pocoto/indexpocoto.css)
    ========================================================= */
 
-/* Limpeza e Formatação de Links do Cabeçalho */
+/* Cabeçalho e Navegação entre Jogos */
+.main-header {
+    background: linear-gradient(135deg, #2D251E 0%, #4A3219 50%, #1E4620 100%);
+    padding: 0.85rem 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+    border-bottom: 4px solid #8B5A2B;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
 .main-header a, 
 .main-header a:visited, 
 .main-header a:hover, 
@@ -12,14 +33,58 @@
 
 .logo {
     color: #FFFFFF !important;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s ease;
+}
+
+.logo:hover {
+    transform: scale(1.03);
+}
+
+.logo-icon {
+    font-size: 1.7rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.28);
+    padding: 0.35rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(6px);
 }
 
 .main-nav a {
     color: #F9F5F0 !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.55rem 1.15rem;
+    border-radius: 10px;
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.main-nav a:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
 }
 
 .main-nav a.active {
+    background: linear-gradient(135deg, #2E6F32 0%, #1E4620 100%);
     color: #FFD700 !important;
+    box-shadow: 0 4px 12px rgba(46, 111, 50, 0.5), inset 0 0 0 1px rgba(255, 215, 0, 0.45);
 }
 
 /* Container Principal */
@@ -186,4 +251,16 @@
     background: #B0A090;
     cursor: not-allowed;
     transform: none;
+}
+
+@media (max-width: 640px) {
+    .header-container {
+        justify-content: center;
+    }
+
+    .main-nav {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
 }
