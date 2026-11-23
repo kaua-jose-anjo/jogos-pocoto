@@ -1,4 +1,4 @@
-/*=========================================================
+/* =========================================================
    POCOTO GAMES - ACERTE O POCOTÓ COM BOMBAS (acerte-pocoto/pocoto.js)
    ========================================================= */
 
@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_TIME_CAP = 45;     // Teto máximo de tempo para não virar farm infinito
     const HORSE_TIME_BONUS = 1;  // +1 segundo ao acertar o cavalo
     const BOMB_TIME_PENALTY = 3; // -3 segundos ao acertar a bomba
+    const MISS_TIME_PENALTY = 1; // -1 segundo ao clicar em casa vazia
 
     let score = 0;
     let lastHole = null;
@@ -145,7 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function whack() {
         const hole = this;
-        if (timeUp || !hole.classList.contains('up') || hole.classList.contains('hit') || hole.classList.contains('exploded')) {
+
+        // Ignora cliques se o jogo não começou, já acabou, ou se o alvo já foi acertado/explodido
+        if (timeUp || !btnStart.disabled || hole.classList.contains('hit') || hole.classList.contains('exploded')) {
+            return;
+        }
+
+        // Penalidade se clicar em uma casa vazia (sem cavalo e sem bomba levantados)
+        if (!hole.classList.contains('up')) {
+            timeLeft = Math.max(0, timeLeft - MISS_TIME_PENALTY);
+            timerEl.textContent = timeLeft;
+            flashTimerColor('#ff9500');
+
+            if (timeLeft <= 0) {
+                endGame();
+            }
             return;
         }
 

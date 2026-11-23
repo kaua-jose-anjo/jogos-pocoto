@@ -1,5 +1,5 @@
 /* =========================================================
-   POCOTO GAMES - 8-BALL (CAÇAPAS E CAPTURA CORRIGIDAS)
+   POCOTO GAMES - 8-BALL (TABELAS, CAÇAPAS E IA PROGRESSIVA)
    (8-ball/8ball.js)
    ========================================================= */
 
@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const { Engine, World, Bodies, Body, Vector, Events, Vertices } = Matter;
 
+    // Impede o Matter.js de matar o quique das bolas que batem devagar nas tabelas
+    Matter.Resolver._restingThresh = 0.001;
+
     const engine = Engine.create();
     engine.gravity.y = 0;
     engine.gravity.x = 0;
@@ -36,6 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let vsAI = false;
     let isAITurn = false;
     let isFirstShot = true;
+    let aiLevel = 1;
+    let aiTurnCount = 0;
 
     // Variáveis Multiplayer Online
     let isOnline = false;
@@ -66,8 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Caçapas com posicionamento alinhado à abertura das tabelas e raio de captura ampliado
     const POCKET_RADIUS = 22;
-    const CAPTURE_RADIUS = 26; // Área efetiva que engole a bola ao cruzar a boca
-    const SUCTION_RADIUS = 34; // Área de borda que puxa a bola para dentro ao cair na quina
+    const CAPTURE_RADIUS = 26;
+    const SUCTION_RADIUS = 34;
 
     const pockets = [
         { x: 28, y: 28 },    // Canto Superior Esquerdo
@@ -248,10 +253,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupWalls() {
         const wallPhysics = {
             isStatic: true,
-            restitution: 0.96,
+            restitution: 0.98,
             friction: 0.0,
             frictionStatic: 0.0,
-            slop: 0.01
+            inertia: Infinity,
+            slop: 0.0
         };
 
         wallDefs.forEach(pts => {
@@ -263,6 +269,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: center.x - currentCenter.x,
                     y: center.y - currentCenter.y
                 });
+                // Garante restituição nas partes internas caso Bodies.fromVertices subdivida o polígono
+                if (cushionBody.parts) {
+                    cushionBody.parts.forEach(part => {
+                        part.restitution = 0.98;
+                        part.friction = 0.0;
+                        part.frictionStatic = 0.0;
+                        part.slop = 0.0;
+                    });
+                }
                 World.add(engine.world, cushionBody);
             }
         });
@@ -283,6 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPlayer = 1;
         isAITurn = false;
         isFirstShot = true;
+        aiTurnCount = 0;
         scoreP1 = 0;
         scoreP2 = 0;
         isShotInProgress = false;
@@ -303,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             frictionStatic: 0.0,
             frictionAir: 0.0035, 
             density: 0.04,
-            slop: 0.01
+            slop: 0.0
         };
 
         whiteBallBody = Bodies.circle(200, 200, BALL_RADIUS, poolBallPhysics);
@@ -372,7 +388,7 @@ document.addEventListener('DOMContentLoaded', () => {
             frictionStatic: 0.0,
             frictionAir: 0.0035, 
             density: 0.04,
-            slop: 0.01
+            slop: 0.0
         };
 
         serializedBalls.forEach(item => {
@@ -412,11 +428,19 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHUD(foulMessage);
     }
 
+    function getEffectiveAIDifficulty() {
+        const playerProgress = (scoreP1 / 100) * 0.05;
+        const turnProgress = aiTurnCount * 0.04;
+        const baseSkill = (aiLevel - 1) * 0.20 + 0.25;
+        return Math.min(1.0, baseSkill + turnProgress + playerProgress);
+    }
+
     function updateHUD(foulMessage = lastFoulMessage) {
         const redBalls = ballBodies.filter(b => b.color === COLOR_P1).length;
         const blueBalls = ballBodies.filter(b => b.color === COLOR_P2).length;
 
-        let p2Label = vsAI ? "🤖 IA (Azul)" : "Jogador 2 (Azul)";
+        const skillPercent = Math.round(getEffectiveAIDifficulty() * 100);
+        let p2Label = vsAI ? `🤖 IA Nv.${aiLevel} (${skillPercent}%)` : "Jogador 2 (Azul)";
         let statusText = currentPlayer === 1 
             ? `<span style="color:${COLOR_P1}">Jogador 1 (Vermelho)</span>` 
             : `<span style="color:${COLOR_P2}">${p2Label}</span>`;
@@ -450,10 +474,38 @@ document.addEventListener('DOMContentLoaded', () => {
         powerPercentage.textContent = `${percent}%`;
     }
 
+    function isPathBlocked(startPos, endPos, ignoreBodies = []) {
+        const dx = endPos.x - startPos.x;
+        const dy = endPos.y - startPos.y;
+        const len = Math.hypot(dx, dy);
+        if (len === 0) return false;
+
+        const ux = dx / len;
+        const uy = dy / len;
+
+        for (let b of ballBodies) {
+            if (ignoreBodies.includes(b)) continue;
+
+            const px = b.position.x - startPos.x;
+            const py = b.position.y - startPos.y;
+            const proj = px * ux + py * uy;
+
+            if (proj > 0 && proj < len) {
+                const perpDist = Math.abs(px * uy - py * ux);
+                if (perpDist < BALL_RADIUS * 2.1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     function playAITurn() {
         if (!vsAI || isOnline || currentPlayer !== 2 || isShotInProgress) return;
 
         isAITurn = true;
+        aiTurnCount++;
+        const skill = getEffectiveAIDifficulty();
 
         if (ballInHand) {
             Body.setPosition(whiteBallBody, { x: 200, y: 200 + (Math.random() * 60 - 30) });
@@ -463,39 +515,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             const aiBalls = ballBodies.filter(b => b.color === COLOR_P2);
-            let targetBall = null;
-            let bestPocket = null;
-            let minDistance = Infinity;
+            let bestShot = null;
+            let bestScore = -Infinity;
 
             aiBalls.forEach(ball => {
                 pockets.forEach(pocket => {
-                    const dist = Math.hypot(ball.position.x - pocket.x, ball.position.y - pocket.y);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        targetBall = ball;
-                        bestPocket = pocket;
+                    const pocketAngle = Math.atan2(pocket.y - ball.position.y, pocket.x - ball.position.x);
+                    const ghostPos = {
+                        x: ball.position.x - Math.cos(pocketAngle) * (BALL_RADIUS * 2),
+                        y: ball.position.y - Math.sin(pocketAngle) * (BALL_RADIUS * 2)
+                    };
+
+                    const distToPocket = Math.hypot(ball.position.x - pocket.x, ball.position.y - pocket.y);
+                    const distWhiteToGhost = Math.hypot(ghostPos.x - whiteBallBody.position.x, ghostPos.y - whiteBallBody.position.y);
+
+                    let shotQuality = 1000 - (distToPocket + distWhiteToGhost * 0.5);
+
+                    const blockedToBall = isPathBlocked(whiteBallBody.position, ghostPos, [whiteBallBody, ball]);
+                    const blockedToPocket = isPathBlocked(ball.position, pocket, [whiteBallBody, ball]);
+
+                    if (blockedToBall || blockedToPocket) {
+                        shotQuality -= 800 * skill;
+                    }
+
+                    if (shotQuality > bestScore) {
+                        bestScore = shotQuality;
+                        bestShot = { ball, pocket, ghostPos, distToPocket };
                     }
                 });
             });
 
-            if (!targetBall) {
-                const targetCandidates = ballBodies.filter(b => !b.isWhite);
-                if (targetCandidates.length > 0) targetBall = targetCandidates[0];
-            }
-
             let aimAngle = 0;
-            if (targetBall && bestPocket) {
-                const pocketAngle = Math.atan2(bestPocket.y - targetBall.position.y, bestPocket.x - targetBall.position.x);
-                const ghostX = targetBall.position.x - Math.cos(pocketAngle) * (BALL_RADIUS * 2);
-                const ghostY = targetBall.position.y - Math.sin(pocketAngle) * (BALL_RADIUS * 2);
-
-                aimAngle = Math.atan2(ghostY - whiteBallBody.position.y, ghostX - whiteBallBody.position.x);
+            if (bestShot) {
+                aimAngle = Math.atan2(
+                    bestShot.ghostPos.y - whiteBallBody.position.y,
+                    bestShot.ghostPos.x - whiteBallBody.position.x
+                );
             } else {
                 aimAngle = Math.random() * Math.PI * 2;
             }
 
-            const aiPower = Math.floor(Math.random() * 35) + 45; 
-            const forceMagnitude = (aiPower / 100) * 0.28;
+            const maxErrorAngle = (1 - skill) * 0.30;
+            const randomError = (Math.random() * 2 - 1) * maxErrorAngle;
+            aimAngle += randomError;
+
+            const idealPower = bestShot ? Math.min(85, Math.max(40, (bestShot.distToPocket / 400) * 70 + 35)) : 60;
+            const powerNoise = (Math.random() * 2 - 1) * (1 - skill) * 30;
+            const finalPower = Math.max(25, Math.min(95, idealPower + powerNoise));
+            const forceMagnitude = (finalPower / 100) * 0.28;
 
             firstBallHit = null;
             pottedThisTurn = [];
@@ -625,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function gameLoop() {
         Engine.update(engine, 1000 / 60);
 
-        const STOP_THRESHOLD = 0.15;
+        const STOP_THRESHOLD = 0.08;
         ballBodies.forEach(b => {
             const currentSpeed = Vector.magnitude(b.velocity);
             if (currentSpeed > 0 && currentSpeed < STOP_THRESHOLD) {
@@ -656,13 +723,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = ballBodies.length - 1; i >= 0; i--) {
                 const b = ballBodies[i];
-                if (b.isSensor) continue; // Ignora bola branca enquanto está na mão do jogador
+                if (b.isSensor) continue;
 
                 const dx = p.x - b.position.x;
                 const dy = p.y - b.position.y;
                 const dist = Math.hypot(dx, dy);
 
-                // 1. Efeito de gravidade da borda da caçapa (puxa bolas que entram na boca)
                 if (dist >= CAPTURE_RADIUS && dist < SUCTION_RADIUS) {
                     const pullStrength = 0.0025;
                     Body.applyForce(b, b.position, {
@@ -671,7 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // 2. Captura garantida ao cruzar o raio da boca da caçapa
                 if (dist < CAPTURE_RADIUS) {
                     if (b.isWhite) {
                         cueBallPotted = true;
@@ -749,6 +814,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 isShotInProgress = false;
 
                 if (!isOnline || currentPlayer === myPlayerNumber) {
+                    const remainingRed = ballBodies.filter(b => b.color === COLOR_P1).length;
+                    const remainingBlue = ballBodies.filter(b => b.color === COLOR_P2).length;
+
+                    if (remainingRed === 0 || remainingBlue === 0) {
+                        const p1Won = remainingRed === 0;
+                        if (vsAI) {
+                            if (p1Won) {
+                                aiLevel++;
+                                alert(`🎉 Você venceu! A IA ficou irritada e subiu para o Nível ${aiLevel}!`);
+                            } else {
+                                aiLevel = Math.max(1, aiLevel - 1);
+                                alert(`💀 Você perdeu até pra essa IA! Dificuldade reduzida para o Nível ${aiLevel}.`);
+                            }
+                        } else {
+                            alert(p1Won ? '🏆 Jogador 1 (Vermelho) venceu!' : '🏆 Jogador 2 (Azul) venceu!');
+                        }
+                        initGame(true);
+                        requestAnimationFrame(gameLoop);
+                        return;
+                    }
+
                     const myColor = currentPlayer === 1 ? COLOR_P1 : COLOR_P2;
                     const opponentColor = currentPlayer === 1 ? COLOR_P2 : COLOR_P1;
 
