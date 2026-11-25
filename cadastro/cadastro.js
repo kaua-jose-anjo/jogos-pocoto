@@ -1,4 +1,4 @@
-document.getElementById('form-cadastro').addEventListener('submit', (e) => {
+document.getElementById('form-cadastro').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const nome = document.getElementById('nome').value.trim();
@@ -6,6 +6,7 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
     const senha = document.getElementById('senha').value;
     const confirmar = document.getElementById('confirmar').value;
     const feedback = document.getElementById('feedback');
+    const btn = document.getElementById('btn-submit');
 
     if (senha !== confirmar) {
         feedback.textContent = 'As senhas não coincidem.';
@@ -13,29 +14,41 @@ document.getElementById('form-cadastro').addEventListener('submit', (e) => {
         return;
     }
 
-    const usuarios = JSON.parse(localStorage.getItem('pocoto_users') || '[]');
+    btn.disabled = true;
+    btn.textContent = 'Criando conta...';
 
-    if (usuarios.some(u => u.email === email)) {
-        feedback.textContent = 'Este e-mail já está cadastrado.';
+    try {
+        const cred = await fbAuth.createUserWithEmailAndPassword(email, senha);
+        await cred.user.updateProfile({ displayName: nome });
+
+        await fbDb.collection('usuarios').doc(cred.user.uid).set({
+            nome,
+            email,
+            stats: {
+                pocotoScore: 0,
+                poolWins: 0,
+                careerOvr: 0,
+                fnafNight: 0
+            },
+            xp: 0,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        feedback.textContent = 'Conta criada na nuvem! Redirecionando...';
+        feedback.className = 'msg-feedback sucesso';
+
+        setTimeout(() => {
+            window.location.href = '../index.html';
+        }, 900);
+    } catch (err) {
+        let msg = 'Erro ao cadastrar. Tente novamente.';
+        if (err.code === 'auth/email-already-in-use') msg = 'Este e-mail já está cadastrado.';
+        else if (err.code === 'auth/invalid-email') msg = 'E-mail inválido.';
+        else if (err.code === 'auth/weak-password') msg = 'A senha deve ter pelo menos 6 caracteres.';
+
+        feedback.textContent = msg;
         feedback.className = 'msg-feedback erro';
-        return;
+        btn.disabled = false;
+        btn.textContent = 'Cadastrar e Entrar';
     }
-
-    const novoUsuario = {
-        nome,
-        email,
-        senha: btoa(senha),
-        criadoEm: new Date().toISOString()
-    };
-
-    usuarios.push(novoUsuario);
-    localStorage.setItem('pocoto_users', JSON.stringify(usuarios));
-    localStorage.setItem('pocoto_session', JSON.stringify({ nome, email }));
-
-    feedback.textContent = 'Conta criada! Redirecionando para o portal...';
-    feedback.className = 'msg-feedback sucesso';
-
-    setTimeout(() => {
-        window.location.href = '../index.html';
-    }, 1000);
 });

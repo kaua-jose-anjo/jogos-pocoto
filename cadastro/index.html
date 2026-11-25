@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +15,7 @@
     <main class="auth-wrapper">
         <div class="auth-card">
             <h1>Criar Conta</h1>
-            <p class="auth-sub">Cadastre seu e-mail para salvar seu perfil no Pocotó Games</p>
+            <p class="auth-sub">Crie seu perfil global no Pocotó Games</p>
 
             <form id="form-cadastro">
                 <div class="form-group">
@@ -38,7 +38,7 @@
                     <input type="password" id="confirmar" required minlength="6" placeholder="Repita a senha">
                 </div>
 
-                <button type="submit" class="btn-submit">Cadastrar e Entrar</button>
+                <button type="submit" id="btn-submit" class="btn-submit">Cadastrar e Entrar</button>
                 <div id="feedback" class="msg-feedback"></div>
             </form>
 
@@ -48,6 +48,10 @@
         </div>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../firebase-config.js"></script>
     <script src="cadastro.js"></script>
 </body>
 </html>

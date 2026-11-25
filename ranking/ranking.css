@@ -1,0 +1,257 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #F4EFE6;
+    color: #2B2118;
+    min-height: 100vh;
+}
+
+.portal-header {
+    background: #1B431E;
+    color: #fff;
+    padding: 16px 32px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 4px solid #8B5A2B;
+}
+
+.logo-area h1 {
+    font-size: 1.45rem;
+    letter-spacing: 0.5px;
+}
+
+.logo-area p {
+    font-size: 0.82rem;
+    color: #C8E6C9;
+}
+
+.portal-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.portal-nav a {
+    color: #E8F5E9;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    transition: background 0.2s;
+}
+
+.portal-nav a:hover,
+.portal-nav a.ativo {
+    background: #8B5A2B;
+    color: #fff;
+}
+
+.user-badge {
+    background: rgba(0, 0, 0, 0.28);
+    border: 1px solid #FFD700;
+    color: #FFD700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.btn-login {
+    background: #2E6F32;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.rank-container {
+    max-width: 1060px;
+    margin: 32px auto;
+    padding: 0 18px 48px;
+}
+
+.rank-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.rank-header h2 {
+    font-size: 2rem;
+    color: #1B431E;
+    margin-bottom: 6px;
+}
+
+.status-conta {
+    color: #5C4E40;
+    font-size: 0.96rem;
+}
+
+.status-conta a {
+    color: #2E6F32;
+    font-weight: 700;
+}
+
+.ranks-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.badge-patente {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.rank-ponei   { background: #EFEBE9; color: #5D4037; border: 1px solid #D7CCC8; }
+.rank-corrida { background: #E3F2FD; color: #1565C0; border: 1px solid #BBDEFB; }
+.rank-campeao { background: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
+.rank-lenda   { background: #FFF3E0; color: #E65100; border: 1px solid #FFE0B2; }
+.rank-mestre  { background: #FFF8E1; color: #B28704; border: 1px solid #FFD54F; }
+
+.podio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.podio-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border-top: 5px solid #8B5A2B;
+}
+
+.podio-card.top-1 { border-top-color: #FFD700; transform: translateY(-4px); }
+.podio-card.top-2 { border-top-color: #B0BEC5; }
+.podio-card.top-3 { border-top-color: #CD7F32; }
+
+.podio-medalha { font-size: 1.9rem; margin-bottom: 4px; }
+.podio-nome { font-size: 1.15rem; font-weight: 800; color: #1B431E; margin-bottom: 6px; }
+.podio-xp { font-size: 1.05rem; font-weight: 800; color: #8B5A2B; margin-top: 8px; }
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-filtro {
+    background: #fff;
+    border: 2px solid #D5C8B8;
+    color: #3E3024;
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-filtro:hover {
+    border-color: #2E6F32;
+}
+
+.btn-filtro.ativo {
+    background: #2E6F32;
+    border-color: #2E6F32;
+    color: #fff;
+}
+
+.table-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    overflow-x: auto;
+    border-top: 5px solid #2E6F32;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+thead {
+    background: #1B431E;
+    color: #fff;
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #EFE7DC;
+}
+
+th {
+    font-size: 0.88rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+tbody tr:hover {
+    background: #FAF6F0;
+}
+
+tbody tr.minha-linha {
+    background: #E8F5E9;
+    font-weight: 600;
+}
+
+.pos {
+    font-weight: 800;
+    font-size: 1.02rem;
+    width: 75px;
+}
+
+.jogador {
+    font-weight: 700;
+    color: #1B431E;
+}
+
+.tag-voce {
+    background: #2E6F32;
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+.xp {
+    font-weight: 800;
+    color: #8B5A2B;
+}
+
+.xp-info {
+    margin-top: 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6B5B4B;
+}
+
+.empty-msg {
+    text-align: center;
+    padding: 28px;
+    color: #6B5B4B;
+    font-weight: 600;
+}

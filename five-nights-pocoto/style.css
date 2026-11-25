@@ -22,11 +22,13 @@ button.on{background:#8B5A2B;color:#fff}
 #map{position:absolute;right:8px;bottom:8px;width:170px;height:218px;background:#000c;border:2px solid #1E4620}
 #map button{position:absolute;width:42px;height:26px;padding:0;font-size:12px}
 #you{position:absolute;left:62px;top:190px;width:46px;text-align:center;font-size:12px;border:1px dashed #8B5A2B;padding:3px 0}
-#menu{position:absolute;inset:0;background:#000e;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:16px}
-#menu h1{margin:0;font-size:clamp(22px,4.5vw,44px);color:#c9b36a;text-shadow:0 0 12px #1E4620}
-#menu p{margin:0;max-width:520px}
-#diffs{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(520px,100%)}
-#diffs button{padding:14px 8px}
+#menu{position:absolute;inset:0;background:linear-gradient(#000d 0,#0000 26%,#0000 70%,#000e 100%);display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;text-align:center;padding:14px 16px}
+#menu h1{margin:0;font-size:clamp(20px,4.5vw,44px);color:#e6d9a8;text-shadow:0 0 14px #1E4620,0 0 4px #000}
+#menu p{margin:4px 0 0;max-width:520px;font-size:clamp(11px,1.8vw,16px);text-shadow:0 0 4px #000}
+#menu .top{display:flex;flex-direction:column;align-items:center}
+#diffs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%}
+#diffs button{padding:12px 6px;font-size:clamp(10px,1.6vw,15px);background:#1E4620ee}
+#diffs button:hover{background:#2c6a2f}
 
 @media (max-width: 640px){
   body{padding-top:76px}

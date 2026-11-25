@@ -187,11 +187,34 @@ function jscare(){
   g.save();g.translate((Math.random()-.5)*40,(Math.random()-.5)*40);
   horse(G.who,450,230+t*325,1+t*5.5,{m:1});g.restore();fx(.5);
 }
+function menuScene(){
+  const t=performance.now()/1000;
+  g.fillStyle='#020302';g.fillRect(0,0,W,H);
+  // luz de fundo atrás dos bichos
+  const bg=g.createRadialGradient(450,260,40,450,260,460);
+  bg.addColorStop(0,'rgba(60,45,20,.35)');bg.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=bg;g.fillRect(0,0,W,H);
+  // fila: Relâmpago, Alazão, Pé-de-Pano, Pocotó (mesma ordem do pôster)
+  const fila=[['rel',135],['ala',345],['pe',555],['poc',765]];
+  fila.forEach((c,i)=>{
+    const bx=c[1]+Math.sin(t*.8+i*1.3)*3;
+    const by=300+Math.sin(t*1.1+i*2)*4;
+    const boca=Math.sin(t*1.7+i*2.1)>.82?.7:0; // de vez em quando abre a boca
+    horse(c[0],bx,by,1.5,{m:boca});
+  });
+  // vinheta escura nas bordas
+  const v=g.createRadialGradient(450,275,150,450,275,540);
+  v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.9)');
+  g.fillStyle=v;g.fillRect(0,0,W,H);
+  // piscadas de luz estilo terror
+  if(Math.random()<.03){g.fillStyle='rgba(0,0,0,.55)';g.fillRect(0,0,W,H)}
+  fx(.08);
+}
 function draw(){
   if(S=='play'){camOpen?camView():office();hud()}
   else if(S=='jump')jscare();
   else if(S=='win'){g.fillStyle='#000';g.fillRect(0,0,W,H);g.fillStyle='#e6d9a8';g.textAlign='center';g.font='bold 90px Courier New';g.fillText('6:00 AM',450,290);g.font='24px Courier New';g.fillText('Você sobreviveu à noite!',450,340)}
-  else{g.fillStyle='#050805';g.fillRect(0,0,W,H);fx(.08)}
+  else menuScene();
 }
 
 /* ---------- INTERFACE ---------- */

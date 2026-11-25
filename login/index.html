@@ -15,7 +15,7 @@
     <main class="auth-wrapper">
         <div class="auth-card">
             <h1>Entrar por E-mail</h1>
-            <p class="auth-sub">Acesse sua conta do Pocotó Games</p>
+            <p class="auth-sub">Acesse sua conta global do Pocotó Games</p>
 
             <form id="form-login">
                 <div class="form-group">
@@ -28,7 +28,7 @@
                     <input type="password" id="senha" required placeholder="Sua senha">
                 </div>
 
-                <button type="submit" class="btn-submit">Entrar</button>
+                <button type="submit" id="btn-submit" class="btn-submit">Entrar</button>
                 <div id="feedback" class="msg-feedback"></div>
             </form>
 
@@ -38,6 +38,10 @@
         </div>
     </main>
 
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="../firebase-config.js"></script>
     <script src="login.js"></script>
 </body>
 </html>
