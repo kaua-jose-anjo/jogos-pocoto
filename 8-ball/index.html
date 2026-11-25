@@ -12,7 +12,9 @@
   <nav>
     <a href="../index.html">Início</a>
     <a href="index.html" class="active">8-Ball</a>
-    <a href="../acerte-o-pocoto/index.html">Acerte o Pocotó</a>
+    <a href="../acerte-pocoto/acerteopocoto.html">Acerte o Pocotó</a>
+    <a href="../modo-carreira/index.html">Modo Carreira</a>
+    <a href="../five-nights-pocoto/index.html">Five Nights</a>
   </nav>
 </header>
 
@@ -32,7 +34,18 @@
   </section>
 
   <section class="board">
-    <canvas id="cv" width="800" height="400"></canvas>
+    <div class="table-wrap">
+      <canvas id="cv" width="800" height="400"></canvas>
+      <div id="winOverlay" class="win-overlay" hidden>
+        <div class="win-card">
+          <div class="win-icon">🏆</div>
+          <h2 id="winTitle">Jogador 1 venceu!</h2>
+          <p id="winSub">Todas as bolas foram encaçapadas!</p>
+          <p id="winScore" class="win-score"></p>
+          <button id="winPlayAgain">Jogar Novamente</button>
+        </div>
+      </div>
+    </div>
     <div class="power" title="Força"><div id="powerFill"></div><span id="powerTxt">0%</span></div>
   </section>
 

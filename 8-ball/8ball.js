@@ -290,6 +290,7 @@ $('restartBtn').onclick = () => {
   if (G.mode === 'online' && !isHost) return setNet('Só o anfitrião pode reiniciar');
   restart(true);
 };
+$('winPlayAgain').onclick = () => $('restartBtn').click();
 
 // ---------- Render ----------
 function ball(x, y, col) {
@@ -323,6 +324,15 @@ function draw() {
   }
 }
 const pname = p => p === 1 ? 'Jogador 1' : G.mode === 'pve' ? 'IA' : 'Jogador 2';
+function updateWinScreen() {
+  const over = G.phase === 'over' && G.winner;
+  $('winOverlay').hidden = !over;
+  if (!over) return;
+  const winName = pname(G.winner) + (G.mode === 'online' && G.winner === G.me ? ' (Você!)' : '');
+  $('winTitle').textContent = winName + ' venceu!';
+  $('winSub').textContent = G.winner === 1 ? 'Todas as bolas vermelhas 🔴 foram encaçapadas!' : 'Todas as bolas azuis 🔵 foram encaçapadas!';
+  $('winScore').textContent = `Placar: P1 ${G.wins[1]} × ${G.wins[2]} ${G.mode === 'pve' ? 'IA' : 'P2'}`;
+}
 function hud() {
   const who = pname(G.cur) + (G.mode === 'online' && G.cur === G.me ? ' (você)' : '');
   $('turnTxt').textContent = G.phase === 'over' ? '🏆 ' + pname(G.winner) + ' venceu!' : 'Vez: ' + who + (G.cur === 1 ? ' 🔴' : ' 🔵');
@@ -335,6 +345,7 @@ function hud() {
   $('score').textContent = `P1 ${G.wins[1]} × ${G.wins[2]} ${G.mode === 'pve' ? 'IA' : 'P2'}`;
   const p = Math.round(G.power * 100);
   $('powerFill').style.height = p + '%'; $('powerTxt').textContent = p + '%';
+  updateWinScreen();
 }
 function loop(now) {
   if (G.charging) { const t = ((now - G.t0) / 700) % 2; G.power = t < 1 ? t : 2 - t; }
