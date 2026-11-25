@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador de Carreira de Futebol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+
+  <!-- TELA 1: Criação do jogador -->
+  <section id="screen-create" class="screen active">
+    <form id="create-form" class="card narrow">
+      <h1>⚽ Simulador de Carreira</h1>
+      <p class="muted">Crie seu jogador aos 17 anos e escreva a sua lenda.</p>
+      <label>Nome
+        <input id="f-name" required maxlength="24" placeholder="Ex: Gabriel Silva">
+      </label>
+      <label>Nacionalidade
+        <select id="f-nat">
+          <option>Brasil</option><option>Argentina</option><option>Portugal</option>
+          <option>Espanha</option><option>França</option><option>Inglaterra</option>
+          <option>Alemanha</option><option>Uruguai</option>
+        </select>
+      </label>
+      <label>Posição
+        <select id="f-pos">
+          <option>Atacante</option><option>Meio-campista</option>
+          <option>Defensor</option><option>Goleiro</option>
+        </select>
+      </label>
+      <label>Clube inicial
+        <select id="f-club"></select> <!-- preenchido pelo JS -->
+      </label>
+      <button class="btn primary" type="submit">Começar carreira</button>
+    </form>
+  </section>
+
+  <!-- TELA 2: Painel principal -->
+  <section id="screen-game" class="screen">
+    <header class="card hero">
+      <div class="avatar" id="p-avatar">?</div>
+      <div class="hero-info">
+        <h2 id="p-name"></h2>
+        <p class="muted"><span id="p-age"></span> anos · <span id="p-pos"></span> · <span id="p-club"></span></p>
+      </div>
+      <div class="ovr"><strong id="p-ovr">0</strong><small>Overall</small></div>
+    </header>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="meter"><span>Moral</span><div class="bar"><i id="bar-morale"></i></div><b id="v-morale"></b></div>
+        <div class="meter"><span>Forma física</span><div class="bar"><i id="bar-fit"></i></div><b id="v-fit"></b></div>
+        <p class="money">Valor de mercado <b id="p-value"></b></p>
+        <p class="money">Saldo bancário <b id="p-money"></b></p>
+      </div>
+      <div class="card stats">
+        <div><b id="st-games">0</b><small>Jogos</small></div>
+        <div><b id="st-goals">0</b><small>Gols</small></div>
+        <div><b id="st-assists">0</b><small>Assistências</small></div>
+        <div class="gold"><b id="st-titles">0</b><small>Títulos</small></div>
+        <div class="gold"><b id="st-ballons">0</b><small>Bolas de Ouro</small></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="btn-sim">Simular temporada</button>
+      <button class="btn" id="btn-train">Treinar</button>
+      <button class="btn" id="btn-trophies">Sala de troféus</button>
+      <button class="btn ghost js-new">Novo jogo</button>
+    </div>
+
+    <div class="card">
+      <h3>Histórico da carreira</h3>
+      <ul id="log" class="log"></ul>
+    </div>
+  </section>
+
+  <!-- TELA 3: Aposentadoria -->
+  <section id="screen-retire" class="screen">
+    <div id="retire-card" class="card narrow"></div>
+  </section>
+</main>
+
+<!-- Modal reutilizável (decisões, eventos e sala de troféus) -->
+<div id="modal" class="modal hidden">
+  <div class="card narrow">
+    <h3 id="modal-title"></h3>
+    <p id="modal-text" class="muted"></p>
+    <div id="modal-options" class="options"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

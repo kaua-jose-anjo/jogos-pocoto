@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8-Ball Pool • Pocotó Games</title>
+<link rel="stylesheet" href="style_8ball.css">
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="../index.html">🐴 Pocotó Games</a>
+  <nav>
+    <a href="../index.html">Início</a>
+    <a href="index.html" class="active">8-Ball</a>
+    <a href="../acerte-o-pocoto/index.html">Acerte o Pocotó</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hud">
+    <div id="turnTxt" class="turn">Vez: Jogador 1</div>
+    <div id="notice" class="notice"></div>
+    <div class="counts"><span id="cnt">🔴 8 × 8 🔵</span><span id="score" class="score">P1 0 × 0 P2</span></div>
+  </section>
+
+  <section class="online">
+    <button id="createBtn">🌐 Criar Sala Online</button>
+    <span id="roomBox" class="room" hidden><b id="roomCode"></b> <button id="copyBtn">📋 Copiar</button></span>
+    <input id="joinInput" placeholder="pocoto-XXXX" maxlength="12" autocomplete="off">
+    <button id="joinBtn">Entrar na Sala</button>
+    <span id="netStatus" class="net">Offline</span>
+  </section>
+
+  <section class="board">
+    <canvas id="cv" width="800" height="400"></canvas>
+    <div class="power" title="Força"><div id="powerFill"></div><span id="powerTxt">0%</span></div>
+  </section>
+
+  <section class="controls">
+    <p>🖱️ Mire com o mouse · <b>Segure ESPAÇO</b> para carregar a força e solte para tacar · Com <b>Bola na Mão</b>, mova a branca e clique para posicionar.</p>
+    <div class="btns">
+      <button id="restartBtn">Reiniciar Partida</button>
+      <button id="modeBtn">Modo: 2 Jogadores (PvP)</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/poly-decomp@0.3.0/build/decomp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="8ball.js"></script>
+</body>
+</html>

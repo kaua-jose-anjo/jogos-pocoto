@@ -1,0 +1,131 @@
+/* ===== Variáveis de tema: gramado, grafite e dourado ===== */
+:root {
+  --bg: #0e1311;
+  --card: #1a211e;
+  --line: #2b3531;
+  --grass: #21a35a;
+  --grass-dark: #167a41;
+  --gold: #f5c542;
+  --text: #e8efe9;
+  --muted: #92a199;
+  --danger: #e5534b;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text);
+  line-height: 1.5;
+  min-height: 100vh;
+  /* faixas de gramado discretas no fundo */
+  background:
+    repeating-linear-gradient(90deg, rgba(33,163,90,.05) 0 80px, transparent 80px 160px),
+    var(--bg);
+}
+
+h1, h2, h3, .ovr strong, .stats b {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+#app { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+/* ===== Sistema de telas (SPA) ===== */
+.screen { display: none; }
+.screen.active { display: block; }
+.hidden { display: none !important; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.narrow { max-width: 480px; margin: 6vh auto 0; }
+.muted { color: var(--muted); }
+
+/* ===== Formulário ===== */
+label { display: block; margin-top: 14px; font-size: .9rem; color: var(--muted); }
+input, select {
+  width: 100%; margin-top: 4px; padding: 11px 12px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px; font: inherit;
+}
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+/* ===== Botões ===== */
+.btn {
+  padding: 12px 18px; border-radius: 8px; cursor: pointer;
+  font: 600 .95rem 'Inter', sans-serif;
+  color: var(--text); background: var(--line); border: 1px solid var(--line);
+}
+.btn:hover:not(:disabled) { border-color: var(--grass); }
+.btn.primary { background: var(--grass); border-color: var(--grass); color: #fff; }
+.btn.primary:hover:not(:disabled) { background: var(--grass-dark); }
+.btn.ghost { background: transparent; color: var(--muted); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+#create-form .btn { width: 100%; margin-top: 20px; }
+
+/* ===== Cabeçalho do jogador ===== */
+.hero { display: flex; align-items: center; gap: 16px; }
+.hero-info { flex: 1; min-width: 0; }
+.avatar {
+  width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+  display: grid; place-items: center;
+  font: 700 1.5rem 'Oswald', sans-serif;
+  background: linear-gradient(135deg, var(--grass), var(--grass-dark));
+  border: 3px solid var(--gold);
+}
+.ovr { text-align: center; }
+.ovr strong { display: block; font-size: 2.8rem; line-height: 1; color: var(--gold); }
+.ovr small, .stats small { color: var(--muted); font-size: .75rem; }
+
+/* ===== Barras e finanças ===== */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid2 .card { margin-bottom: 0; }
+.meter { display: grid; grid-template-columns: 90px 1fr 36px; align-items: center; gap: 8px; margin-bottom: 10px; font-size: .9rem; }
+.bar { height: 10px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--grass); transition: width .4s; }
+.money { display: flex; justify-content: space-between; margin-top: 6px; color: var(--muted); }
+.money b { color: var(--text); }
+
+/* ===== Estatísticas ===== */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; align-content: center; }
+.stats b { display: block; font-size: 1.7rem; }
+.stats .gold b { color: var(--gold); }
+
+/* ===== Ações ===== */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+
+/* ===== Log ===== */
+.log { list-style: none; padding: 0; max-height: 360px; overflow-y: auto; }
+.log li { padding: 9px 0; border-bottom: 1px solid var(--line); font-size: .92rem; }
+.log .tag { color: var(--muted); font-size: .78rem; display: block; }
+.log .gold { color: var(--gold); }
+.log .bad { color: var(--danger); }
+
+/* ===== Modal ===== */
+.modal {
+  position: fixed; inset: 0; z-index: 10; padding: 16px;
+  background: rgba(0,0,0,.75); display: grid; place-items: center; overflow-y: auto;
+}
+.modal .card { margin: 0; width: 100%; border-color: var(--gold); }
+#modal-text { margin: 8px 0 16px; white-space: pre-line; }
+.options { display: grid; gap: 8px; }
+.options .btn { text-align: left; }
+
+/* ===== Aposentadoria ===== */
+.rank { font: 700 2rem 'Oswald', sans-serif; color: var(--gold); margin: 6px 0 14px; }
+.retire-list { padding-left: 18px; margin: 6px 0 14px; color: var(--muted); }
+
+/* ===== Mobile ===== */
+@media (max-width: 640px) {
+  .grid2 { grid-template-columns: 1fr; }
+  .actions .btn { flex: 1 1 45%; }
+  .hero { flex-wrap: wrap; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }

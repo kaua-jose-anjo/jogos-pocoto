@@ -1,87 +1,143 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocoto Games - Arena Gamer do Poccotó</title>
+    <title>Pocotó Games - Portal de Minijogos</title>
     <link rel="stylesheet" href="home.css">
+    <style>
+        body {
+            background-color: #F9F5F0;
+            color: #2D251E;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+        }
+        .games-section {
+            max-width: 1040px;
+            margin: 3rem auto;
+            padding: 0 1.25rem;
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+        .section-header h1 {
+            color: #1E4620;
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .section-header p {
+            color: #665A4F;
+            font-size: 1.05rem;
+        }
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+            gap: 1.75rem;
+        }
+        .portal-card {
+            background: #FFFFFF;
+            border-radius: 22px;
+            padding: 2rem 1.6rem;
+            border: 1px solid #E2D7CB;
+            border-top: 6px solid #2E6F32;
+            box-shadow: 0 14px 32px rgba(45, 37, 30, 0.12);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: center;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .portal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 18px 38px rgba(45, 37, 30, 0.18);
+        }
+        .portal-card .icon {
+            font-size: 3.8rem;
+            margin-bottom: 0.75rem;
+        }
+        .portal-card h2 {
+            color: #2D251E;
+            font-size: 1.5rem;
+            margin: 0 0 0.6rem 0;
+        }
+        .portal-card p {
+            color: #665A4F;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0 0 1.6rem 0;
+        }
+        .btn-play {
+            display: inline-block;
+            padding: 0.9rem 2rem;
+            background: linear-gradient(135deg, #8B5A2B 0%, #6E441F 100%);
+            color: #FFFFFF !important;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none !important;
+            border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(139, 90, 43, 0.3);
+            transition: background 0.2s ease;
+        }
+        .btn-play:hover {
+            background: linear-gradient(135deg, #6E441F 0%, #523115 100%);
+        }
+    </style>
 </head>
 <body>
-    <!-- CABEÇALHO SUPERIOR -->
-    <header class="main-header">
-        <div class="header-branding">
-            <img src="imagens/watermarked_img_5334739338940190992.webp" alt="Logo Pocoto Games" class="logo-img">
-            <div>
-                <h1>Pocoto Games</h1>
-                <p>Jogos Bançudos do Cavalo</p>
-            </div>
+    <header class="main-header" style="background-color: #1E4620; padding: 1rem 0; border-bottom: 4px solid #8B5A2B;">
+        <div class="header-container" style="max-width: 1040px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 1.25rem;">
+            <a href="home.html" class="logo" style="color: #FFFFFF !important; font-size: 1.5rem; font-weight: 700; text-decoration: none !important; display: flex; align-items: center; gap: 8px;">
+                <span class="logo-icon">🐴</span> Pocotó Games
+            </a>
+            <nav class="main-nav" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                <a href="home.html" style="color: #FFD700 !important; text-decoration: none !important; font-weight: 700; font-size: 1rem;">Início</a>
+                <a href="8-ball/index.html" style="color: #F9F5F0 !important; text-decoration: none !important; font-weight: 600; font-size: 1rem;">8-Ball</a>
+                <a href="acerte-pocoto/index.html" style="color: #F9F5F0 !important; text-decoration: none !important; font-weight: 600; font-size: 1rem;">Acerte o Pocotó</a>
+                <a href="carreira-futebol/index.html" style="color: #F9F5F0 !important; text-decoration: none !important; font-weight: 600; font-size: 1rem;">Carreira Futebol</a>
+            </nav>
         </div>
-
-        <ul class="user-actions">
-            <li><a href="login/index_login.html" class="btn-link">Já tem uma conta? Faça login</a></li>
-            <li><a href="cadastro/index_cad.html" class="btn-primary">Cadastre-se</a></li>
-        </ul>
     </header>
 
-    <!-- BARRA DE NAVEGAÇÃO -->
-    <nav class="navbar">
-        <ul>
-            <li><a href="#section1">Sobre a Arena</a></li>
-            <li><a href="#section2">Sinuca 8-Ball</a></li>
-            <li><a href="#section3">Acerte o Poccotó</a></li>
-            <li><a href="#section4">Dúvidas & Agendamentos</a></li>
-        </ul>
-    </nav>
-
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main class="main-content">
-
-<!-- SEÇÃO 1: SOBRE A ARENA -->
-<section id="section1" class="content-section">
-    <h2>Bem-vindo à Arena Gamer do Poccotó</h2>
-    <p>
-        Esta plataforma foi desenvolvida com o propósito de promover a integração e o entretenimento social do nosso grupo, trazendo uma experiência interativa e divertida estrelada pelo nosso icônico mascote: o <b>Cavalo Bançudo</b>.
-    </p>
-    
-    <div class="image-wrapper">
-        <img src="imagens/watermarked_img_5334739338940190992.webp" alt="Arena Gamer do Poccotó">
-    </div>
-</section>
-        <!-- SEÇÃO 2: JOGO DE BILHAR 8-BALL -->
-        <section id="section2" class="content-section">
-            <h2>Sinuca 8-Ball Poccotó</h2>
-            <p>Mostre toda a sua habilidade na mesa de bilhar com o Cavalo Bançudo!</p>
-            <div class="image-wrapper">
-                <img src="imagens/fc8af01b-68f0-4de5-a37d-a91e8eed5f08.webp" alt="Jogo 8-Ball Poccotó">
+    <main>
+        <section class="games-section">
+            <div class="section-header">
+                <h1>🐴 Bem-vindo ao Pocotó Games</h1>
+                <p>Escolha um dos minijogos abaixo e divirta-se direto no navegador!</p>
             </div>
-            <div class="game-action">
-                <a href="8-ball/8ball.html" class="btn-primary btn-game">🎱 Jogar Sinuca 8-Ball</a>
-            </div>
-        </section>
 
-        <!-- SEÇÃO 3: JOGO ACERTE O POCCOTÓ -->
-        <section id="section3" class="content-section">
-            <h2>Acerte o Poccotó!</h2>
-            <p>Teste seus reflexos acertando o Cavalo Bançudo quando ele sair do buraco!</p>
-            <div class="image-wrapper">
-                <img src="imagens/watermarked_img_709182551186086536.webp" alt="Jogo Acerte o Poccotó">
-            </div>
-            <div class="game-action">
-                <a href="./acerte-pocoto/acerteopocoto.html" class="btn-primary btn-game">🔨 Jogar Acerte o Poccotó</a>
+            <div class="games-grid">
+                <!-- Jogo 1: 8-Ball Pool -->
+                <article class="portal-card">
+                    <div>
+                        <div class="icon">🎱</div>
+                        <h2>Bilhar 8-Ball</h2>
+                        <p>Jogue sinuca contra um amigo no mesmo PC, desafie a Inteligência Artificial ou crie uma sala Multiplayer Online.</p>
+                    </div>
+                    <a href="8-ball/index.html" class="btn-play">Jogar 8-Ball</a>
+                </article>
+
+                <!-- Jogo 2: Acerte o Pocotó -->
+                <article class="portal-card">
+                    <div>
+                        <div class="icon">🐴</div>
+                        <h2>Acerte o Pocotó</h2>
+                        <p>Teste seus reflexos acertando o Cavalo Bançudo antes que o tempo acabe — mas desvie das bombas explosivas!</p>
+                    </div>
+                    <a href="acerte-pocoto/acerteopocoto.html" class="btn-play">Jogar Pocotó</a>
+                </article>
+
+                <!-- Jogo 3: Simulador de Carreira de Futebol -->
+                <article class="portal-card">
+                    <div>
+                        <div class="icon">⚽</div>
+                        <h2>Simulador de Carreira</h2>
+                        <p>Crie seu jogador aos 17 anos, simule temporadas, evolua seus atributos e conquiste troféus e Bolas de Ouro.</p>
+                    </div>
+                    <a href="modo-carreira/index.html" class="btn-play">Jogar Carreira</a>
+                </article>
             </div>
         </section>
-
-        <!-- SEÇÃO 4: AGENDAMENTO E DÚVIDAS -->
-        <section id="section4" class="content-section">
-            <h2>Agendamento de Torneios & Dúvidas</h2>
-            <p>Reserve um horário para os campeonatos ou tire suas dúvidas sobre a plataforma.</p>
-            
-            <div class="calendar-dropdown">
-                <button class="btn-primary btn-calendar">📅 Selecionar Data do Torneio</button>
-                
-                <div class="calendar-popover">
-                    <h3>Escolha a Data</h3>
-                    <form class="appointment-form">
-                        <div class="form-group">
-                            <label for="data-agendamento">Data:</label>
-                            <input type="date" id="data-agendamento"
+    </main>
+</body>
+</html>
