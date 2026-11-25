@@ -1,0 +1,53 @@
+!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta • Pocotó Games</title>
+    <link rel="stylesheet" href="../login/auth.css">
+</head>
+<body>
+    <header class="auth-header">
+        <a href="../index.html">🐴 Pocotó Games</a>
+        <a href="../index.html" class="btn-voltar">🏠 Voltar ao Portal</a>
+    </header>
+
+    <main class="auth-wrapper">
+        <div class="auth-card">
+            <h1>Criar Conta</h1>
+            <p class="auth-sub">Cadastre seu e-mail para salvar seu perfil no Pocotó Games</p>
+
+            <form id="form-cadastro">
+                <div class="form-group">
+                    <label for="nome">Nome ou Apelido</label>
+                    <input type="text" id="nome" required maxlength="24" placeholder="Ex: PocotóMaster">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required placeholder="voce@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <input type="password" id="senha" required minlength="6" placeholder="Mínimo 6 caracteres">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmar">Confirmar Senha</label>
+                    <input type="password" id="confirmar" required minlength="6" placeholder="Repita a senha">
+                </div>
+
+                <button type="submit" class="btn-submit">Cadastrar e Entrar</button>
+                <div id="feedback" class="msg-feedback"></div>
+            </form>
+
+            <div class="auth-footer">
+                Já tem uma conta? <a href="../login/index.html">Fazer Login</a>
+            </div>
+        </div>
+    </main>
+
+    <script src="cadastro.js"></script>
+</body>
+</html>

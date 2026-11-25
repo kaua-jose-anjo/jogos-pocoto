@@ -1,33 +1,28 @@
-/* =========================================================
-   POCOTO GAMES - SCRIPT DE LOGIN (login/login.js)
-   ========================================================= */
+document.getElementById('form-login').addEventListener('submit', (e) => {
+    e.preventDefault();
 
-document.addEventListener('DOMContentLoaded', () => {
-    const formLogin = document.getElementById('form-login');
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const senha = document.getElementById('senha').value;
+    const feedback = document.getElementById('feedback');
 
-    if (formLogin) {
-        formLogin.addEventListener('submit', (event) => {
-            event.preventDefault();
+    const usuarios = JSON.parse(localStorage.getItem('pocoto_users') || '[]');
+    const usuario = usuarios.find(u => u.email === email && u.senha === btoa(senha));
 
-            const usuario = document.getElementById('login-email').value.trim();
-            const senha = document.getElementById('login-senha').value;
-
-            if (!usuario || !senha) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-
-            // Simulação de autenticação com dados guardados no Cadastro
-            const contasGuardadas = JSON.parse(localStorage.getItem('pocotoUsuarios') || '[]');
-            const contaValida = contasGuardadas.find(u => (u.email === usuario || u.nome === usuario) && u.senha === senha);
-
-            if (contaValida || usuario === 'admin') {
-                alert(`🎮 Bem-vindo de volta, ${contaValida ? contaValida.nome : usuario}! Redirecionando para a Arena...`);
-                localStorage.setItem('pocotoUsuarioLogado', contaValida ? contaValida.nome : usuario);
-                window.location.href = '../home.html';
-            } else {
-                alert('⚠️ Usuário ou senha incorretos. Verifique os dados ou crie uma nova conta.');
-            }
-        });
+    if (!usuario) {
+        feedback.textContent = 'E-mail ou senha incorretos.';
+        feedback.className = 'msg-feedback erro';
+        return;
     }
+
+    localStorage.setItem('pocoto_session', JSON.stringify({
+        nome: usuario.nome,
+        email: usuario.email
+    }));
+
+    feedback.textContent = `Bem-vindo de volta, ${usuario.nome}!`;
+    feedback.className = 'msg-feedback sucesso';
+
+    setTimeout(() => {
+        window.location.href = '../index.html';
+    }, 800);
 });
