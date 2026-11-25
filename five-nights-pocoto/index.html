@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Five Nights at Pocotó's - Pocotó Games</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header id="portal-nav">
+  <a href="../index.html" class="brand">🐴 POCOTÓ GAMES</a>
+  <nav>
+    <a href="../index.html">🏠 Início</a>
+    <a href="../8-ball/index.html">🎱 8-Ball</a>
+    <a href="../acerte-pocoto/acerteopocoto.html">🔨 Acerte o Pocotó</a>
+    <a href="../modo-carreira/index.html">⚽ Modo Carreira</a>
+    <a href="index.html" class="active">🔦 Five Nights</a>
+  </nav>
+</header>
+
+<div id="stage">
+  <canvas id="c" width="900" height="550"></canvas>
+  <div id="ctl" class="hid">
+    <div class="side L"><button id="lightL">Luz</button><button id="doorL">Porta</button></div>
+    <div class="side R"><button id="lightR">Luz</button><button id="doorR">Porta</button></div>
+    <button id="camBtn">Monitor</button>
+    <div id="map" class="hid"></div>
+  </div>
+  <div id="menu">
+    <h1>Five Nights at Pocotó's</h1>
+    <p id="msg">Sobreviva das 12:00 AM às 6:00 AM no sítio assombrado.</p>
+    <div id="diffs">
+      <button data-d="1">Noite 1 (Fácil)</button>
+      <button data-d="3">Noite 3 (Médio)</button>
+      <button data-d="5">Noite 5 (Difícil)</button>
+      <button data-d="20">Noite 20/20/20/20 (Pesadelo)</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

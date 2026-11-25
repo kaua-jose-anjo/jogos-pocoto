@@ -2,6 +2,19 @@
    POCOTO GAMES - ACERTE O POCOTÓ (acerte-pocoto/indexpocoto.css)
    ========================================================= */
 
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #F9F5F0;
+    color: #2D251E;
+    min-height: 100vh;
+}
+
 /* Cabeçalho e Navegação entre Jogos */
 .main-header {
     background: linear-gradient(135deg, #2D251E 0%, #4A3219 50%, #1E4620 100%);
@@ -14,7 +27,7 @@
 }
 
 .header-container {
-    max-width: 980px;
+    max-width: 1120px;
     margin: 0 auto;
     padding: 0 1.2rem;
     display: flex;
@@ -55,7 +68,8 @@
 .main-nav {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.45rem;
     background: rgba(0, 0, 0, 0.28);
     padding: 0.35rem;
     border-radius: 14px;
@@ -66,13 +80,13 @@
 .main-nav a {
     color: #F9F5F0 !important;
     font-weight: 700;
-    font-size: 0.95rem;
-    padding: 0.55rem 1.15rem;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.95rem;
     border-radius: 10px;
     transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: 0.35rem;
 }
 
 .main-nav a:hover {
@@ -95,6 +109,8 @@
 }
 
 .game-card {
+    display: block;
+    width: 100%;
     background-color: #FFFFFF;
     border-radius: 24px;
     padding: 2rem;
@@ -148,6 +164,7 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
+    width: 100%;
     max-width: 540px;
     margin: 0 auto 2rem auto;
     background-color: #2E6F32;
@@ -253,7 +270,7 @@
     transform: none;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .header-container {
         justify-content: center;
     }
@@ -261,6 +278,13 @@
     .main-nav {
         width: 100%;
         justify-content: center;
-        flex-wrap: wrap;
+    }
+
+    .hole {
+        height: 110px;
+    }
+
+    .pocoto {
+        font-size: 4rem;
     }
 }

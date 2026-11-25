@@ -1,402 +1,190 @@
-/* =========================================================
-   POCOTO GAMES - ESTILOS DA PÁGINA INICIAL (style_home.css)
-   Cores Temáticas: 
-   - Primária: Marrom Claro (#8B5A2B / #A06C3F)
-   - Secundária: Verde Escuro (#1E4620 / #2A5A2E)
-   ========================================================= */
-
-:root {
-    /* Cores Principais */
-    --primary-brown: #8B5A2B;
-    --primary-brown-hover: #724720;
-    --primary-brown-light: #F7F3EE;
-    
-    --secondary-green: #1E4620;
-    --secondary-green-hover: #143216;
-    --secondary-green-light: #2A5A2E;
-    
-    /* Neutros e Destaques */
-    --bg-color: #F4EFEA;
-    --card-bg: #FFFFFF;
-    --text-color: #2D251E;
-    --text-muted: #665A4F;
-    --border-color: #D4C4B5;
-    --shadow: 0 8px 20px rgba(45, 37, 30, 0.08);
-}
-
-/* --- RESETS BÁSICOS --- */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    line-height: 1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #F9F5F0;
+    color: #2B1D0E;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-/* --- CABEÇALHO SUPERIOR --- */
-.main-header {
-    background-color: var(--secondary-green);
-    color: #FFFFFF;
+.portal-header {
+    background-color: #1E4620;
+    color: #F9F5F0;
+    padding: 20px 40px;
+    border-bottom: 5px solid #8B5A2B;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    gap: 16px;
 }
 
-.header-branding {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
+.logo-area h1 {
+    font-size: 1.9rem;
+    letter-spacing: 1px;
 }
 
-.logo-img {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--primary-brown);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.header-branding h1 {
-    font-size: 1.8rem;
-    color: #FFFFFF;
-    letter-spacing: 0.5px;
-}
-
-.header-branding p {
+.logo-area p {
     font-size: 0.9rem;
-    color: #D1E2D2;
+    color: #D2C4B4;
 }
 
-.user-actions {
+.portal-nav {
     display: flex;
-    list-style: none;
-    gap: 1rem;
-    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-/* --- BARRA DE NAVEGAÇÃO --- */
-.navbar {
-    background-color: var(--primary-brown);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.navbar ul {
-    display: flex;
-    justify-content: center;
-    list-style: none;
-    padding: 0;
-}
-
-.navbar a {
-    display: block;
-    color: #FFFFFF;
+.portal-nav a {
+    color: #F9F5F0;
     text-decoration: none;
-    padding: 1rem 1.8rem;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.navbar a:hover {
-    background-color: var(--primary-brown-hover);
-    color: #FFEBCE;
-}
-
-/* --- BOTÕES E LINKS --- */
-.btn-primary {
-    background-color: var(--secondary-green);
-    color: #FFFFFF !important;
-    padding: 0.65rem 1.4rem;
+    padding: 8px 14px;
     border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    display: inline-block;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: 0 3px 8px rgba(30, 70, 32, 0.3);
+    font-weight: 600;
+    background-color: rgba(255, 255, 255, 0.08);
+    transition: 0.2s;
 }
 
-.btn-primary:hover {
-    background-color: var(--secondary-green-hover);
-    transform: translateY(-2px);
+.portal-nav a:hover,
+.portal-nav a.ativo {
+    background-color: #8B5A2B;
 }
 
-.btn-link {
-    color: #FFFFFF;
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 500;
-    padding: 0.5rem 0.8rem;
-    transition: color 0.2s ease;
+.portal-main {
+    flex: 1;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 35px 20px;
 }
 
-.btn-link:hover {
-    color: #FFDDAA;
-    text-decoration: underline;
+.intro-banner {
+    text-align: center;
+    margin-bottom: 35px;
 }
 
-.btn-game {
-    font-size: 1.1rem;
-    padding: 0.85rem 2rem;
-    background-color: var(--primary-brown);
-    box-shadow: 0 4px 12px rgba(139, 90, 43, 0.3);
+.intro-banner h2 {
+    font-size: 2rem;
+    color: #1E4620;
+    margin-bottom: 8px;
 }
 
-.btn-game:hover {
-    background-color: var(--primary-brown-hover);
+.intro-banner p {
+    color: #5C4033;
 }
 
-/* --- CONTEÚDO PRINCIPAL --- */
-.main-content {
-    max-width: 1000px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+.game-card {
+    background: #FFFFFF;
+    border: 2px solid #D2C4B4;
+    border-radius: 14px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    box-shadow: 0 6px 16px rgba(43, 29, 14, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.content-section {
-    background-color: var(--card-bg);
-    border-radius: 16px;
-    padding: 2.5rem;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border-color);
-    border-left: 6px solid var(--secondary-green);
-    text-align: center;
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 24px rgba(43, 29, 14, 0.16);
 }
 
-.content-section h2 {
-    color: var(--primary-brown);
-    font-size: 2rem;
-    margin-bottom: 0.8rem;
-}
-
-.content-section p {
-    color: var(--text-muted);
-    font-size: 1.05rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Visualização das Imagens */
-.image-wrapper {
-    margin: 1.5rem auto;
-    max-width: 480px;
-}
-
-.image-wrapper img {
-    width: 100%;
-    height: auto;
-    border-radius: 14px;
-    border: 4px solid var(--primary-brown-light);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
-    transition: transform 0.3s ease;
-}
-
-.image-wrapper img:hover {
-    transform: scale(1.02);
-}
-
-.game-action, .about-action {
-    margin-top: 1.5rem;
-}
-
-/* --- SUB-ABA / MODAL DE INFORMAÇÕES (SEÇÃO 1) --- */
-.modal-overlay {
-    display: none; /* Escondido por padrão, acionado pelo JS */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.65);
-    z-index: 1000;
+.card-banner {
+    height: 140px;
+    display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(4px);
+    font-size: 3.6rem;
 }
 
-.modal-content {
-    background-color: var(--card-bg);
-    border: 3px solid var(--primary-brown);
-    border-radius: 16px;
-    padding: 2.5rem 2rem 2rem 2rem;
-    max-width: 500px;
-    width: 90%;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    animation: popup 0.3s ease-out;
+.card-banner.sinuca { background: linear-gradient(135deg, #1b5e20, #2e7d32); }
+.card-banner.arcade { background: linear-gradient(135deg, #8B5A2B, #b87a3d); }
+.card-banner.futebol { background: linear-gradient(135deg, #1565c0, #2e7d32); }
+.card-banner.terror { background: linear-gradient(135deg, #121212, #3e2723); }
+
+.card-terror {
+    border-color: #5d4037;
 }
 
-.modal-content h3 {
-    color: var(--primary-brown);
-    font-size: 1.6rem;
-    margin-bottom: 1rem;
-}
-
-.modal-content p {
-    color: var(--text-color);
-    font-size: 1.05rem;
-    line-height: 1.6;
-}
-
-.modal-close {
-    position: absolute;
-    top: 12px;
-    right: 18px;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: var(--primary-brown);
-    cursor: pointer;
-    transition: color 0.2s;
-}
-
-.modal-close:hover {
-    color: var(--secondary-green);
-}
-
-@keyframes popup {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* --- SEÇÃO 4: AGENDAMENTO E SUPORTE --- */
-.calendar-dropdown {
-    margin: 1.5rem 0;
-    display: inline-block;
-    position: relative;
-}
-
-.calendar-popover {
-    background-color: var(--primary-brown-light);
-    border: 2px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-top: 1rem;
-    max-width: 350px;
-    margin-left: auto;
-    margin-right: auto;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-}
-
-.calendar-popover h3 {
-    color: var(--secondary-green);
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
-}
-
-.appointment-form .form-group {
+.card-content {
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    text-align: left;
-    margin-bottom: 1rem;
+    flex: 1;
 }
 
-.appointment-form label {
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-}
-
-.appointment-form input {
-    padding: 0.6rem 0.8rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 1rem;
-    background-color: #FFFFFF;
-}
-
-.appointment-form input:focus {
-    outline: none;
-    border-color: var(--secondary-green);
-    box-shadow: 0 0 0 3px rgba(30, 70, 32, 0.15);
-}
-
-.btn-confirm {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: var(--secondary-green);
-    color: #FFFFFF;
-    border: none;
-    border-radius: 6px;
+.tag {
+    align-self: flex-start;
+    font-size: 0.75rem;
     font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background-color: #E8F5E9;
+    color: #1E4620;
+    margin-bottom: 10px;
 }
 
-.btn-confirm:hover {
-    background-color: var(--secondary-green-hover);
+.tag-terror {
+    background-color: #2c1b18;
+    color: #ffab91;
 }
 
-.support-link {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px dashed var(--border-color);
+.card-content h3 {
+    font-size: 1.35rem;
+    margin-bottom: 10px;
+    color: #1E4620;
 }
 
-.support-link .btn-link {
-    color: var(--primary-brown);
-    font-weight: bold;
+.card-content p {
+    font-size: 0.95rem;
+    color: #4E342E;
+    line-height: 1.45;
+    margin-bottom: 20px;
+    flex: 1;
 }
 
-.support-link .btn-link:hover {
-    color: var(--secondary-green);
-}
-
-/* --- RODAPÉ --- */
-footer {
-    background-color: var(--secondary-green);
-    color: #D1E2D2;
+.btn-jogar {
+    display: block;
     text-align: center;
-    padding: 1.5rem;
-    margin-top: 3rem;
-    font-size: 0.9rem;
-    border-top: 4px solid var(--primary-brown);
+    text-decoration: none;
+    background-color: #2E6F32;
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
 }
 
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 768px) {
-    .main-header {
-        flex-direction: column;
-        gap: 1rem;
-        text-align: center;
-    }
+.btn-jogar:hover {
+    background-color: #1E4620;
+}
 
-    .header-branding {
-        flex-direction: column;
-    }
+.btn-terror {
+    background-color: #5d4037;
+}
 
-    .navbar ul {
-        flex-direction: column;
-    }
+.btn-terror:hover {
+    background-color: #3e2723;
+}
 
-    .navbar a {
-        text-align: center;
-        padding: 0.8rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .content-section {
-        padding: 1.5rem;
-    }
+.portal-footer {
+    text-align: center;
+    padding: 18px;
+    background-color: #1E4620;
+    color: #D2C4B4;
+    border-top: 4px solid #8B5A2B;
+    font-size: 0.9rem;
 }
