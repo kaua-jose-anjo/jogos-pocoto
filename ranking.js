@@ -1,15 +1,29 @@
-/* =========================================================
-   POCOTO GAMES - RANKING GLOBAL NA NUVEM (FIRESTORE)
-   ========================================================= */
 window.PocotoRank = {
+    statsPadrao() {
+        return {
+            pocotoScore: 0,
+            poolWins: 0,
+            careerOvr: 0,
+            fnafNight: 0,
+            defenseWave: 0
+        };
+    },
+
     calcularXP(stats = {}) {
         const s = {
             pocotoScore: Number(stats.pocotoScore || 0),
             poolWins: Number(stats.poolWins || 0),
             careerOvr: Number(stats.careerOvr || 0),
-            fnafNight: Number(stats.fnafNight || 0)
+            fnafNight: Number(stats.fnafNight || 0),
+            defenseWave: Number(stats.defenseWave || 0)
         };
-        return s.pocotoScore + (s.poolWins * 50) + (s.careerOvr * 3) + (s.fnafNight * 40);
+        return (
+            s.pocotoScore +
+            (s.poolWins * 50) +
+            (s.careerOvr * 3) +
+            (s.fnafNight * 40) +
+            (s.defenseWave * 15)
+        );
     },
 
     obterPatente(xp = 0) {
@@ -21,59 +35,43 @@ window.PocotoRank = {
         return { titulo: 'Pônei Iniciante', icone: '🐴', classe: 'rank-ponei' };
     },
 
-    // Atualiza estatística do jogador logado no Firestore
-    // mode: 'max' (mantém o maior recorde) | 'add' (soma +1 vitória)
-    async registrar(campo, valor, mode = 'max') {
-        const user = window.fbAuth && fbAuth.currentUser;
-        if (!user) return false;
+    async registrar(campo, valor, modo = 'max') {
+        if (!window.fbAuth || !window.fbDb) return;
+        const user = fbAuth.currentUser;
+        if (!user) return;
+
+        const valNum = Number(valor || 0);
+        if (valNum <= 0) return;
 
         const ref = fbDb.collection('usuarios').doc(user.uid);
-        const snap = await ref.get();
-        const dados = snap.exists ? snap.data() : {};
-        const stats = Object.assign(
-            { pocotoScore: 0, poolWins: 0, careerOvr: 0, fnafNight: 0 },
-            dados.stats || {}
-        );
+        try {
+            await fbDb.runTransaction(async (tx) => {
+                const doc = await tx.get(ref);
+                const dados = doc.exists ? doc.data() : {};
+                const stats = Object.assign(this.statsPadrao(), dados.stats || {});
+                const atual = Number(stats[campo] || 0);
 
-        const atual = Number(stats[campo] || 0);
-        stats[campo] = mode === 'add' ? atual + Number(valor) : Math.max(atual, Number(valor));
-        const xp = this.calcularXP(stats);
+                if (modo === 'add') {
+                    stats[campo] = atual + valNum;
+                } else {
+                    if (valNum <= atual) return;
+                    stats[campo] = valNum;
+                }
 
-        await ref.set({
-            nome: dados.nome || user.displayName || user.email.split('@')[0],
-            email: user.email,
-            stats,
-            xp,
-            atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+                const xp = this.calcularXP(stats);
+                const patente = this.obterPatente(xp);
 
-        return true;
-    },
-
-    // Busca todos os jogadores do Firestore ordenados por categoria
-    async obterRanking(categoria = 'geral') {
-        const snap = await fbDb.collection('usuarios').limit(100).get();
-        const lista = [];
-
-        snap.forEach(doc => {
-            const d = doc.data();
-            const stats = Object.assign(
-                { pocotoScore: 0, poolWins: 0, careerOvr: 0, fnafNight: 0 },
-                d.stats || {}
-            );
-            const xp = this.calcularXP(stats);
-            lista.push({
-                uid: doc.id,
-                nome: d.nome || 'Jogador',
-                stats,
-                xp,
-                patente: this.obterPatente(xp)
+                tx.set(ref, {
+                    nome: dados.nome || user.displayName || (user.email ? user.email.split('@')[0] : 'Jogador'),
+                    email: dados.email || user.email || '',
+                    stats: stats,
+                    xp: xp,
+                    patente: patente.titulo,
+                    atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
             });
-        });
-
-        return lista.sort((a, b) => {
-            if (categoria === 'geral') return b.xp - a.xp;
-            return (b.stats[categoria] || 0) - (a.stats[categoria] || 0);
-        });
+        } catch (err) {
+            console.error('Erro ao registrar pontuação no ranking:', err);
+        }
     }
 };

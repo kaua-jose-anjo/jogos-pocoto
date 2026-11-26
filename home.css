@@ -39,6 +39,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    align-items: center;
 }
 
 .portal-nav a {
@@ -54,6 +55,45 @@ body {
 .portal-nav a:hover,
 .portal-nav a.ativo {
     background-color: #8B5A2B;
+}
+
+/* Barra de Autenticação no Header */
+.auth-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.auth-bar[hidden] {
+    display: none;
+}
+
+.btn-auth {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #FFFFFF;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.btn-login { background-color: #2E6F32; }
+.btn-login:hover { background-color: #388e3c; }
+.btn-register { background-color: #8B5A2B; }
+.btn-register:hover { background-color: #a16a35; }
+.btn-logout { background-color: #a83232; }
+.btn-logout:hover { background-color: #8c2626; }
+
+.user-pill {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid rgba(255, 215, 0, 0.45);
 }
 
 .portal-main {
@@ -113,6 +153,7 @@ body {
 .card-banner.arcade { background: linear-gradient(135deg, #8B5A2B, #b87a3d); }
 .card-banner.futebol { background: linear-gradient(135deg, #1565c0, #2e7d32); }
 .card-banner.terror { background: linear-gradient(135deg, #121212, #3e2723); }
+.card-banner.defesa { background: linear-gradient(135deg, #2E6F32, #8B5A2B); }
 
 .card-terror {
     border-color: #5d4037;
@@ -178,6 +219,58 @@ body {
 
 .btn-terror:hover {
     background-color: #3e2723;
+}
+
+/* Modal de Login / Cadastro */
+.modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 16px;
+}
+
+.modal-bg[hidden] {
+    display: none;
+}
+
+.modal-box {
+    background: #FFFFFF;
+    border: 3px solid #8B5A2B;
+    border-radius: 14px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+}
+
+.modal-box h2 {
+    color: #1E4620;
+    margin-bottom: 14px;
+}
+
+.modal-box input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border: 2px solid #D2C4B4;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.auth-err {
+    color: #a83232;
+    font-size: 0.85rem;
+    min-height: 1.2em;
+    margin-bottom: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .portal-footer {

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defesa do Celeiro • Pocotó Games</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="topnav">
+  <span class="brand">🐴 Pocotó Games</span>
+  <a href="../index.html">🏠 Início</a>
+  <a href="../8-ball/index.html">🎱 8-Ball</a>
+  <a href="../acerte-pocoto/acerteopocoto.html">🎯 Acerte o Pocotó</a>
+  <a href="../modo-carreira/index.html">⚽ Modo Carreira</a>
+  <a href="../five-nights-pocoto/index.html">👻 Five Nights</a>
+  <a href="../ranking/index.html">🏆 Ranking</a>
+</nav>
+
+<main class="game">
+  <div class="hud">
+    <div class="stat">❤️ <b id="lives">20</b></div>
+    <div class="stat">🥕 <b id="money">150</b></div>
+    <div class="stat">🌊 Onda <b id="waveNum">0</b></div>
+    <button id="btnWave" class="btn primary">▶ Iniciar Onda 1</button>
+    <label class="auto"><input type="checkbox" id="chkAuto"> Auto-Wave</label>
+    <div class="speed">
+      <button id="btn1x" class="btn small active">1x</button>
+      <button id="btn2x" class="btn small">2x</button>
+    </div>
+    <button id="btnMute" class="btn small">🔊 Som</button>
+  </div>
+
+  <div class="board">
+    <div class="canvas-wrap">
+      <canvas id="game" width="900" height="540"></canvas>
+      <div id="overlay" class="overlay hidden">
+        <div class="box">
+          <h2>💀 O Celeiro caiu!</h2>
+          <p id="overText"></p>
+          <button id="btnRestart" class="btn primary">🔄 Jogar de novo</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="panel">
+      <h3 id="pTitle">Selecione</h3>
+      <div id="pSub" class="sub"></div>
+      <div id="pStats" class="stats"></div>
+      <p id="pDesc" class="desc"></p>
+      <p id="pNext" class="next"></p>
+      <button id="btnUp" class="btn primary wide">⬆ Evoluir</button>
+      <button id="btnSell" class="btn danger wide">💰 Vender</button>
+    </aside>
+  </div>
+
+  <div id="shop" class="shop"></div>
+  <p class="help">Clique numa torre da loja (ou teclas 1–6), posicione no pasto e clique. <b>Esc</b>/botão direito cancela · <b>Espaço</b> inicia a onda · Passe o mouse nas 🥕 para colher.</p>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="../firebase-config.js"></script>
+<script src="../ranking.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

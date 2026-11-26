@@ -1,164 +1,203 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking Global • Pocotó Games</title>
-    <link rel="stylesheet" href="ranking.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking Global • Pocotó Games</title>
+  <style>
+    :root {
+      --g1: #1E4620;
+      --g2: #2E6F32;
+      --wood: #8B5A2B;
+      --cream: #F9F5F0;
+      --dark: #2D251E;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--cream);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, var(--dark) 0%, #4A3219 50%, var(--g1) 100%);
+      padding: 0.9rem 1.5rem;
+      border-bottom: 4px solid var(--wood);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .logo { color: #fff; font-weight: 800; font-size: 1.4rem; text-decoration: none; }
+    nav { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.1);
+    }
+    nav a:hover { background: var(--g2); }
+    nav a.active { background: var(--wood); }
+
+    main { max-width: 1120px; margin: 2rem auto; padding: 0 1rem; }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 1.8rem;
+      border: 2px solid #E2D7CB;
+      border-top: 6px solid var(--wood);
+      box-shadow: 0 12px 28px rgba(45, 37, 30, 0.14);
+    }
+    h1 { color: var(--g1); margin-bottom: 0.4rem; }
+    .sub { color: #665A4F; margin-bottom: 1.2rem; font-size: 0.95rem; }
+
+    .ranks-legenda {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .badge-patente {
+      padding: 0.35rem 0.75rem;
+      border-radius: 99px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .rank-ponei { background: #EFE8DE; color: #5C4938; }
+    .rank-corrida { background: #E3F2FD; color: #1565C0; }
+    .rank-campeao { background: #E8F5E9; color: #2E7D32; }
+    .rank-lenda { background: #FFF3E0; color: #E65100; }
+    .rank-mestre { background: #FFF8E1; color: #B28704; border: 1px solid #FFD54F; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 780px; }
+    th, td { padding: 0.85rem 0.75rem; text-align: left; border-bottom: 1px solid #EAE0D5; }
+    th { background: var(--g1); color: #fff; font-size: 0.9rem; }
+    th:first-child { border-top-left-radius: 10px; }
+    th:last-child { border-top-right-radius: 10px; }
+    tr:hover td { background: #FAF6F0; }
+    .pos { font-weight: 800; font-size: 1.05rem; }
+    .xp-val { font-weight: 800; color: var(--g1); }
+    .me-row td { background: #EEF7EA !important; font-weight: 700; }
+  </style>
 </head>
 <body>
-    <header class="portal-header">
-        <div class="logo-area">
-            <h1>🐴 POCOTÓ GAMES</h1>
-            <p>Ranking Global Online</p>
-        </div>
+  <header>
+    <a href="../index.html" class="logo">🐴 Pocotó Games</a>
+    <nav>
+      <a href="../index.html">🏠 Início</a>
+      <a href="../8-ball/index.html">🎱 8-Ball</a>
+      <a href="../acerte-pocoto/acerteopocoto.html">🔨 Acerte o Pocotó</a>
+      <a href="../modo-carreira/index.html">⚽ Modo Carreira</a>
+      <a href="../five-nights-pocoto/index.html">🔦 Five Nights</a>
+      <a href="../defesa-celeiro/index.html">🛡️ Defesa do Celeiro</a>
+      <a href="index.html" class="active">🏆 Ranking</a>
+    </nav>
+  </header>
 
-        <nav class="portal-nav">
-            <a href="../index.html">Início</a>
-            <a href="../8-ball/index.html">8-Ball Pool</a>
-            <a href="../acerte-pocoto/acerteopocoto.html">Acerte o Pocotó</a>
-            <a href="../modo-carreira/index.html">Modo Carreira</a>
-            <a href="../five-nights-pocoto/index.html">Five Nights</a>
-            <a href="index.html" class="ativo">🏆 Ranking</a>
-        </nav>
+  <main>
+    <div class="card">
+      <h1>🏆 Classificação Global do Haras</h1>
+      <p class="sub">Acumule pontos em todos os jogos do portal para subir sua patente!</p>
 
-        <div id="user-area" class="user-area"></div>
-    </header>
+      <div class="ranks-legenda">
+        <span class="badge-patente rank-ponei">🐴 Pônei Iniciante (0+ XP)</span>
+        <span class="badge-patente rank-corrida">🐎 Cavalo de Corrida (1000+ XP)</span>
+        <span class="badge-patente rank-campeao">🏆 Garanhão Campeão (5000+ XP)</span>
+        <span class="badge-patente rank-lenda">🔥 Lenda do Haras (10000+ XP)</span>
+        <span class="badge-patente rank-mestre">👑 Mestre Pocotó (100000+ XP)</span>
+      </div>
 
-    <main class="rank-container">
-        <div class="rank-header">
-            <h2>🏆 Classificação Global & Patentes</h2>
-            <p id="status-conta" class="status-conta">Carregando status da conta...</p>
-        </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jogador</th>
+              <th>Patente</th>
+              <th>XP Total</th>
+              <th>🛡️ Defesa</th>
+              <th>🔨 Pocotó</th>
+              <th>🎱 Sinuca</th>
+              <th>⚽ Carreira</th>
+              <th>🔦 FNAF</th>
+            </tr>
+          </thead>
+          <tbody id="rankBody">
+            <tr><td colspan="9">Carregando classificação...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
-        <div class="ranks-legenda">
-            <span class="badge-patente rank-ponei">🐴 Pônei Iniciante (0+ XP)</span>
-            <span class="badge-patente rank-corrida">🐎 Cavalo de Corrida (1000+ XP)</span>
-            <span class="badge-patente rank-campeao">🏆 Garanhão Campeão (5000+ XP)</span>
-            <span class="badge-patente rank-lenda">🔥 Lenda do Haras (10000+ XP)</span>
-            <span class="badge-patente rank-mestre">👑 Mestre Pocotó (100000+ XP)</span>
-        </div>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script src="../ranking.js"></script>
+  <script>
+    (() => {
+      const tbody = document.getElementById('rankBody');
+      let currentUid = null;
 
-        <section id="podio-area" class="podio-grid"></section>
+      fbAuth.onAuthStateChanged(u => {
+        currentUid = u ? u.uid : null;
+        carregarRanking();
+      });
 
-        <div class="filtros">
-            <button class="btn-filtro ativo" data-cat="geral">⭐ Geral (XP)</button>
-            <button class="btn-filtro" data-cat="pocotoScore">🔨 Acerte o Pocotó</button>
-            <button class="btn-filtro" data-cat="poolWins">🎱 8-Ball (Vitórias)</button>
-            <button class="btn-filtro" data-cat="careerOvr">⚽ Carreira (OVR)</button>
-            <button class="btn-filtro" data-cat="fnafNight">🔦 Five Nights (Noite)</button>
-        </div>
+      async function carregarRanking() {
+        try {
+          const snap = await fbDb.collection('usuarios').get();
+          const lista = [];
 
-        <div class="table-card">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Jogador</th>
-                        <th>Patente</th>
-                        <th>🔨 Pocotó</th>
-                        <th>🎱 8-Ball</th>
-                        <th>⚽ OVR</th>
-                        <th>🔦 FNaF</th>
-                        <th>⭐ XP Total</th>
-                    </tr>
-                </thead>
-                <tbody id="rank-body">
-                    <tr><td colspan="8" style="text-align:center;padding:24px;">Carregando ranking global...</td></tr>
-                </tbody>
-            </table>
-            <p id="empty-msg" class="empty-msg" hidden>Nenhum jogador cadastrado ainda. Crie uma conta para entrar no ranking!</p>
-        </div>
-
-        <p class="xp-info">
-            Cálculo de XP: <strong>1 pt</strong> no Acerte o Pocotó • <strong>50 XP</strong> por vitória no 8-Ball • <strong>3 XP</strong> por ponto de OVR na Carreira • <strong>40 XP</strong> por Noite no FNaF.
-        </p>
-    </main>
-
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="../firebase-config.js"></script>
-    <script src="../ranking.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            let currentUid = null;
-            let categoriaAtual = 'geral';
-
-            fbAuth.onAuthStateChanged((user) => {
-                const userArea = document.getElementById('user-area');
-                const statusConta = document.getElementById('status-conta');
-
-                if (user) {
-                    currentUid = user.uid;
-                    const nome = user.displayName || user.email.split('@')[0];
-                    userArea.innerHTML = `<span class="user-badge">👤 ${nome}</span>`;
-                    statusConta.innerHTML = `Logado como <strong>${nome}</strong> — seus recordes são salvos na nuvem automaticamente.`;
-                } else {
-                    currentUid = null;
-                    userArea.innerHTML = `<a href="../login/index.html" class="btn-login">Entrar</a>`;
-                    statusConta.innerHTML = `⚠️ Você não está logado. <a href="../login/index.html">Entre na sua conta</a> para aparecer no ranking global.`;
-                }
-                renderTabela();
+          snap.forEach(doc => {
+            const d = doc.data() || {};
+            const st = Object.assign(PocotoRank.statsPadrao(), d.stats || {});
+            const xp = PocotoRank.calcularXP(st);
+            const pat = PocotoRank.obterPatente(xp);
+            lista.push({
+              uid: doc.id,
+              nome: d.nome || 'Jogador',
+              st,
+              xp,
+              pat
             });
+          });
 
-            async function renderTabela() {
-                const tbody = document.getElementById('rank-body');
-                const podioArea = document.getElementById('podio-area');
-                const emptyMsg = document.getElementById('empty-msg');
+          lista.sort((a, b) => b.xp - a.xp);
 
-                try {
-                    const lista = await PocotoRank.obterRanking(categoriaAtual);
+          if (!lista.length) {
+            tbody.innerHTML = '<tr><td colspan="9">Nenhum jogador registrado ainda.</td></tr>';
+            return;
+          }
 
-                    if (lista.length === 0) {
-                        tbody.innerHTML = '';
-                        podioArea.innerHTML = '';
-                        emptyMsg.hidden = false;
-                        return;
-                    }
-
-                    emptyMsg.hidden = true;
-
-                    const medalhas = ['🥇', '🥈', '🥉'];
-                    podioArea.innerHTML = lista.slice(0, 3).map((j, idx) => `
-                        <div class="podio-card top-${idx + 1}">
-                            <div class="podio-medalha">${medalhas[idx]} ${idx + 1}º Lugar</div>
-                            <div class="podio-nome">${j.nome}</div>
-                            <span class="badge-patente ${j.patente.classe}">${j.patente.icone} ${j.patente.titulo}</span>
-                            <div class="podio-xp">${j.xp} XP</div>
-                        </div>
-                    `).join('');
-
-                    tbody.innerHTML = lista.map((j, i) => {
-                        const pos = i === 0 ? '🥇 1º' : i === 1 ? '🥈 2º' : i === 2 ? '🥉 3º' : `${i + 1}º`;
-                        const isMe = currentUid && currentUid === j.uid;
-                        return `
-                            <tr class="${isMe ? 'minha-linha' : ''}">
-                                <td class="pos">${pos}</td>
-                                <td class="jogador">${j.nome} ${isMe ? '<span class="tag-voce">VOCÊ</span>' : ''}</td>
-                                <td><span class="badge-patente ${j.patente.classe}">${j.patente.icone} ${j.patente.titulo}</span></td>
-                                <td>${j.stats.pocotoScore} pts</td>
-                                <td>${j.stats.poolWins}</td>
-                                <td>${j.stats.careerOvr || '-'}</td>
-                                <td>${j.stats.fnafNight ? 'Noite ' + j.stats.fnafNight : '-'}</td>
-                                <td class="xp">${j.xp} XP</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } catch (e) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#c62828;padding:24px;">Erro ao carregar ranking. Verifique as regras do Firestore no Firebase.</td></tr>`;
-                }
-            }
-
-            document.querySelectorAll('.btn-filtro').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('ativo'));
-                    btn.classList.add('ativo');
-                    categoriaAtual = btn.dataset.cat;
-                    renderTabela();
-                });
-            });
-        });
-    </script>
+          tbody.innerHTML = lista.map((j, idx) => {
+            const medalha = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}º`;
+            const isMe = currentUid && j.uid === currentUid;
+            return `
+              <tr class="${isMe ? 'me-row' : ''}">
+                <td class="pos">${medalha}</td>
+                <td>${j.nome}${isMe ? ' (Você)' : ''}</td>
+                <td><span class="badge-patente ${j.pat.classe}">${j.pat.icone} ${j.pat.titulo}</span></td>
+                <td class="xp-val">${j.xp} XP</td>
+                <td>Onda ${j.st.defenseWave || 0}</td>
+                <td>${j.st.pocotoScore || 0} pts</td>
+                <td>${j.st.poolWins || 0} vit.</td>
+                <td>OVR ${j.st.careerOvr || 0}</td>
+                <td>Noite ${j.st.fnafNight || 0}</td>
+              </tr>
+            `;
+          }).join('');
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="9">Erro ao carregar ranking.</td></tr>';
+        }
+      }
+    })();
+  </script>
 </body>
 </html>

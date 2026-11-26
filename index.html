@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pocotó Games — Portal de Jogos</title>
+    <title>Pocotó Games • Portal de Jogos</title>
     <link rel="stylesheet" href="home.css">
 </head>
 <body>
@@ -19,76 +19,160 @@
             <a href="acerte-pocoto/acerteopocoto.html">Acerte o Pocotó</a>
             <a href="modo-carreira/index.html">Modo Carreira</a>
             <a href="five-nights-pocoto/index.html">Five Nights at Pocotó's</a>
+            <a href="defesa-celeiro/index.html">Defesa do Celeiro</a>
             <a href="ranking/index.html">🏆 Ranking</a>
         </nav>
 
-        <!-- Área de Login / Usuário Logado (preenchida pelo auth.js) -->
-        <div id="user-area" class="user-area"></div>
+        <div class="auth-bar" id="authGuest">
+            <button class="btn-auth btn-login" id="openLoginBtn">Entrar</button>
+            <button class="btn-auth btn-register" id="openRegBtn">Cadastrar</button>
+        </div>
+        <div class="auth-bar" id="authUser" hidden>
+            <span class="user-pill" id="userLabel">🐴 Jogador</span>
+            <button class="btn-auth btn-logout" id="logoutBtn">Sair</button>
+        </div>
     </header>
 
     <main class="portal-main">
         <section class="intro-banner">
-            <h2>Escolha o seu desafio</h2>
-            <p>Todos os jogos rodam instantaneamente no navegador sem precisar instalar nada.</p>
+            <h2>Bem-vindo ao Haras!</h2>
+            <p>Escolha um dos minigames abaixo para jogar e subir sua patente no Ranking Global.</p>
         </section>
 
         <section class="games-grid">
-            <!-- Jogo 1: 8-Ball Pool -->
+            <article class="game-card">
+                <div class="card-banner defesa">🛡️</div>
+                <div class="card-content">
+                    <span class="tag">Novo • Tower Defense</span>
+                    <h3>Defesa do Celeiro</h3>
+                    <p>Construa e evolua 6 tipos de torres do sítio, cultive cenouras e defenda o celeiro contra hordas de predadores.</p>
+                    <a href="defesa-celeiro/index.html" class="btn-jogar">Jogar Agora</a>
+                </div>
+            </article>
+
             <article class="game-card">
                 <div class="card-banner sinuca">🎱</div>
                 <div class="card-content">
-                    <span class="tag">Esporte / Multiplayer</span>
+                    <span class="tag">Multiplayer & IA</span>
                     <h3>8-Ball Pool</h3>
-                    <p>Sinuca clássica com física realista, partida contra a IA ou multiplayer online entre amigos.</p>
+                    <p>Desafie seus amigos online em tempo real ou jogue contra a inteligência artificial na mesa de sinuca.</p>
                     <a href="8-ball/index.html" class="btn-jogar">Jogar Agora</a>
                 </div>
             </article>
 
-            <!-- Jogo 2: Acerte o Pocotó -->
             <article class="game-card">
                 <div class="card-banner arcade">🔨</div>
                 <div class="card-content">
-                    <span class="tag">Arcade / Reflexo</span>
+                    <span class="tag">Arcade & Reflexo</span>
                     <h3>Acerte o Pocotó</h3>
-                    <p>Teste seus reflexos nas 9 tocas! Acerte o Pocotó para somar pontos e desvie das bombas.</p>
+                    <p>Acerte o Cavalo Bançudo assim que ele sair da toca para ganhar pontos e tempo, mas cuidado com as bombas!</p>
                     <a href="acerte-pocoto/acerteopocoto.html" class="btn-jogar">Jogar Agora</a>
                 </div>
             </article>
 
-            <!-- Jogo 3: Modo Carreira Futebol -->
             <article class="game-card">
                 <div class="card-banner futebol">⚽</div>
                 <div class="card-content">
-                    <span class="tag">Simulador / Gestão</span>
-                    <h3>Modo Carreira Futebol</h3>
-                    <p>Crie seu jogador, evolua seu Overall, conquiste títulos e chegue ao topo do futebol mundial.</p>
+                    <span class="tag">Simulação</span>
+                    <h3>Modo Carreira</h3>
+                    <p>Crie seu jogador, treine atributos, aumente seu Overall e conquiste títulos até o topo do futebol.</p>
                     <a href="modo-carreira/index.html" class="btn-jogar">Jogar Agora</a>
                 </div>
             </article>
 
-            <!-- Jogo 4: Five Nights at Pocotó's -->
             <article class="game-card card-terror">
-                <div class="card-banner terror">🐴🔦</div>
+                <div class="card-banner terror">🔦</div>
                 <div class="card-content">
-                    <span class="tag tag-terror">Terror / Sobrevivência</span>
+                    <span class="tag tag-terror">Terror & Sobrevivência</span>
                     <h3>Five Nights at Pocotó's</h3>
-                    <p>Vigie as câmeras do sítio das 12 AM às 6 AM, controle a energia e feche as portas antes que os cavalos entrem.</p>
-                    <a href="five-nights-pocoto/index.html" class="btn-jogar btn-terror">Entrar no Turno</a>
+                    <p>Vigie as câmeras do sítio durante a madrugada, feche as portas na hora certa e economize energia até as 6 AM.</p>
+                    <a href="five-nights-pocoto/index.html" class="btn-jogar btn-terror">Jogar Agora</a>
                 </div>
             </article>
         </section>
     </main>
 
+    <div class="modal-bg" id="authModal" hidden>
+        <div class="modal-box">
+            <h2 id="modalTitle">Entrar na Conta</h2>
+            <input type="text" id="authName" placeholder="Seu apelido no ranking" hidden>
+            <input type="email" id="authEmail" placeholder="E-mail">
+            <input type="password" id="authPass" placeholder="Senha (mín. 6 caracteres)">
+            <div class="auth-err" id="authErr"></div>
+            <div class="modal-actions">
+                <button class="btn-auth btn-logout" id="closeModalBtn">Cancelar</button>
+                <button class="btn-auth btn-login" id="submitAuthBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="portal-footer">
-        <p>© 2026 Pocotó Games — Todos os direitos reservados.</p>
+        <p>© 2026 Pocotó Games • Todos os direitos reservados</p>
     </footer>
+
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="ranking.js"></script>
-    <script src="auth.js"></script>
+    <script>
+        (() => {
+            const $ = id => document.getElementById(id);
+            let isRegister = false;
 
-    <script src="auth.js"></script>
+            function openModal(reg) {
+                isRegister = reg;
+                $('modalTitle').textContent = reg ? 'Criar Conta Pocotó' : 'Entrar na Conta';
+                $('authName').hidden = !reg;
+                $('authErr').textContent = '';
+                $('authModal').hidden = false;
+            }
+
+            $('openLoginBtn').onclick = () => openModal(false);
+            $('openRegBtn').onclick = () => openModal(true);
+            $('closeModalBtn').onclick = () => $('authModal').hidden = true;
+            $('logoutBtn').onclick = () => fbAuth.signOut();
+
+            $('submitAuthBtn').onclick = async () => {
+                const email = $('authEmail').value.trim();
+                const pass = $('authPass').value;
+                const nome = $('authName').value.trim();
+                $('authErr').textContent = '';
+
+                try {
+                    if (isRegister) {
+                        if (!nome) return $('authErr').textContent = 'Digite um apelido.';
+                        const cred = await fbAuth.createUserWithEmailAndPassword(email, pass);
+                        await cred.user.updateProfile({ displayName: nome });
+                        await fbDb.collection('usuarios').doc(cred.user.uid).set({
+                            nome,
+                            email,
+                            stats: PocotoRank.statsPadrao(),
+                            xp: 0,
+                            patente: 'Pônei Iniciante'
+                        }, { merge: true });
+                    } else {
+                        await fbAuth.signInWithEmailAndPassword(email, pass);
+                    }
+                    $('authModal').hidden = true;
+                } catch (err) {
+                    $('authErr').textContent = err.message;
+                }
+            };
+
+            fbAuth.onAuthStateChanged(async (user) => {
+                $('authGuest').hidden = !!user;
+                $('authUser').hidden = !user;
+                if (user) {
+                    const doc = await fbDb.collection('usuarios').doc(user.uid).get();
+                    const data = doc.exists ? doc.data() : {};
+                    const nome = data.nome || user.displayName || user.email.split('@')[0];
+                    const xp = PocotoRank.calcularXP(data.stats || {});
+                    const pat = PocotoRank.obterPatente(xp);
+                    $('userLabel').textContent = `${pat.icone} ${nome} • ${xp} XP`;
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
