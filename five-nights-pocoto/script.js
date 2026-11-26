@@ -19,7 +19,7 @@ function stopSnd(){try{hum&&hum.stop()}catch(e){}hum=null;clearInterval(melT)}
 /* ---------- JOGO ---------- */
 function start(d){
   const D=DIFF[d];A().resume();stopSnd();
-  G={D,t:0,p:100,dL:0,dR:0,aL:0,aR:0,lL:0,lR:0,out:0,outT:0,jt:0,wt:0,who:'',fan:0,use:1,
+  G={D,night:Number(d),t:0,p:100,dL:0,dR:0,aL:0,aR:0,lL:0,lR:0,out:0,outT:0,jt:0,wt:0,who:'',fan:0,use:1,
     e:{poc:{pos:0,door:false,ai:D.ai[0],iv:3.02,t:0},pe:{pos:0,door:false,ai:D.ai[1],iv:4.97,t:0},ala:{pos:0,door:false,ai:D.ai[2],iv:4.98,t:0}},
     rel:{stage:0,run:0,ai:D.ai[3],t:0}};
   camOpen=false;cam='1A';S='play';
@@ -27,7 +27,13 @@ function start(d){
   ui();
 }
 function jump(w){S='jump';G.who=w;G.jt=0;camOpen=false;stopSnd();scream();ui()}
-function win(){S='win';G.wt=0;stopSnd();tone(523,1.5,'triangle',.2);tone(784,2,'triangle',.2);ui()}
+function win(){
+  S='win';G.wt=0;stopSnd();tone(523,1.5,'triangle',.2);tone(784,2,'triangle',.2);
+  if(window.PocotoRank && G && G.night){
+    PocotoRank.registrar('fnafNight', G.night, 'max').catch(()=>{});
+  }
+  ui();
+}
 function end(m){S='menu';stopSnd();$('msg').textContent=m;ui()}
 const roll=ai=>Math.floor(Math.random()*21)<=ai;
 

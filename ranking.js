@@ -14,10 +14,10 @@ window.PocotoRank = {
 
     obterPatente(xp = 0) {
         const pontos = Number(xp || 0);
-        if (pontos >= 1500) return { titulo: 'Mestre Pocotó', icone: '👑', classe: 'rank-mestre' };
-        if (pontos >= 800)  return { titulo: 'Lenda do Haras', icone: '🔥', classe: 'rank-lenda' };
-        if (pontos >= 400)  return { titulo: 'Garanhão Campeão', icone: '🏆', classe: 'rank-campeao' };
-        if (pontos >= 150)  return { titulo: 'Cavalo de Corrida', icone: '🐎', classe: 'rank-corrida' };
+        if (pontos >= 100000) return { titulo: 'Mestre Pocotó', icone: '👑', classe: 'rank-mestre' };
+        if (pontos >= 10000)  return { titulo: 'Lenda do Haras', icone: '🔥', classe: 'rank-lenda' };
+        if (pontos >= 5000)  return { titulo: 'Garanhão Campeão', icone: '🏆', classe: 'rank-campeao' };
+        if (pontos >= 1000)  return { titulo: 'Cavalo de Corrida', icone: '🐎', classe: 'rank-corrida' };
         return { titulo: 'Pônei Iniciante', icone: '🐴', classe: 'rank-ponei' };
     },
 

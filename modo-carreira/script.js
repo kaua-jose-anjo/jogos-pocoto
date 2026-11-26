@@ -86,9 +86,20 @@ function marketValue(p = S) {
 // Salário anual (milhões) conforme o tier do clube
 const salaryAt = tier => Math.round((0.15 + marketValue() * 0.05 * (0.6 + tier * 0.2)) * 10) / 10;
 
-/* ---------- 4. PERSISTÊNCIA ---------- */
+/* ---------- 4. PERSISTÊNCIA E RANKING GLOBAL ---------- */
 
-const save = () => localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+function syncCloudRank() {
+  if (!S || !window.PocotoRank) return;
+  const melhorOvr = Math.max(S.ovr || 0, (S.rec && S.rec.peakOvr) || 0);
+  if (melhorOvr > 0) {
+    PocotoRank.registrar('careerOvr', melhorOvr, 'max').catch(() => {});
+  }
+}
+
+const save = () => {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+  syncCloudRank();
+};
 
 function load() {
   try { return JSON.parse(localStorage.getItem(SAVE_KEY)); } catch { return null; }
@@ -453,6 +464,13 @@ function init() {
   $('btn-train').onclick = train;
   $('btn-trophies').onclick = showTrophies;
   document.querySelectorAll('.js-new').forEach(b => b.onclick = newGame);
+
+  // Sincroniza o OVR salvo localmente assim que o Firebase confirmar o login
+  if (window.fbAuth) {
+    fbAuth.onAuthStateChanged(user => {
+      if (user && S) syncCloudRank();
+    });
+  }
 
   // Retoma o save, se existir
   S = load();

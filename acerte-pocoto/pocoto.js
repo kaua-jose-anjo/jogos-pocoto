@@ -24,8 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeLeft = INITIAL_TIME;
     let elapsedTime = 0; // Controla a progressão de dificuldade mesmo quando o jogador ganha tempo extra
 
-    let highScore = localStorage.getItem('pocoto_high_score') || 0;
+    let highScore = Number(localStorage.getItem('pocoto_high_score') || 0);
     highScoreEl.textContent = highScore;
+
+    // Sincroniza o recorde local com o ranking global assim que confirmar o login
+    if (window.fbAuth) {
+        fbAuth.onAuthStateChanged(user => {
+            if (user && highScore > 0 && window.PocotoRank) {
+                PocotoRank.registrar('pocotoScore', highScore, 'max').catch(() => {});
+            }
+        });
+    }
 
     // Calcula a dificuldade de 0.0 (fácil) até 1.0 (insano) usando tempo sobrevivido + pontuação
     function getDifficulty() {
@@ -52,6 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btnStart.disabled = false;
 
         holes.forEach(h => h.classList.remove('up', 'hit', 'exploded'));
+
+        if (score > 0 && window.PocotoRank) {
+            PocotoRank.registrar('pocotoScore', score, 'max').catch(() => {});
+        }
 
         if (score > highScore) {
             highScore = score;

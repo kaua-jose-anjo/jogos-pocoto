@@ -54,12 +54,12 @@ function buildBoard(list) {
 
 // ---------- Estado ----------
 const G = { mode: 'pvp', cur: 1, first: true, phase: 'aim', reason: '', winner: 0, me: 1,
-  rem: { 1: 8, 2: 8 }, wins: { 1: 0, 2: 0 }, hp: { x: 200, y: 200 }, charging: false, power: 0, t0: 0, shooter: 1 };
+  rem: { 1: 8, 2: 8 }, wins: { 1: 0, 2: 0 }, hp: { x: 200, y: 200 }, charging: false, power: 0, t0: 0, shooter: 1, winRecorded: false };
 let firstHit = null, pocketed = [], cuePocketed = false, mouse = { x: 400, y: 200 }, aiT = null;
 let peer = null, conn = null, isHost = false;
 
 function resetG() {
-  Object.assign(G, { cur: 1, first: true, phase: 'aim', reason: '', winner: 0, rem: { 1: 8, 2: 8 }, charging: false, power: 0 });
+  Object.assign(G, { cur: 1, first: true, phase: 'aim', reason: '', winner: 0, rem: { 1: 8, 2: 8 }, charging: false, power: 0, winRecorded: false });
 }
 function restart(sendInit) {
   clearTimeout(aiT); resetG();
@@ -133,7 +133,14 @@ function applyState(s) {
     if (cue.out) { cue.out = false; World.add(world, cue); }
     Body.setPosition(cue, s.cue); Body.setVelocity(cue, { x: 0, y: 0 }); G.phase = 'aim';
   }
-  if (s.winner) G.phase = 'over';
+  if (s.winner) {
+    G.phase = 'over';
+    const venceuValido = (G.mode === 'pve' && s.winner === 1) || (G.mode === 'online' && s.winner === G.me);
+    if (venceuValido && !G.winRecorded && window.PocotoRank) {
+      G.winRecorded = true;
+      PocotoRank.registrar('poolWins', 1, 'add').catch(() => {});
+    }
+  }
   schedAI();
 }
 const canPlace = p => p.x > FL + R && p.x < FR - R && p.y > FT + R && p.y < FB - R && balls.every(b => Math.hypot(b.position.x - p.x, b.position.y - p.y) > 2 * R + 1);
